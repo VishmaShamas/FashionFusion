@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "158492273296",
+    "project_id": "fashion-fusion-c717a",
+    "storage_bucket": "fashion-fusion-c717a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:158492273296:android:24b87005830afaac4bc615",
+        "android_client_info": {
+          "package_name": "com.example.fashion_fusion"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2N2DiYc7Rr8MqdXGQrEtwobY5n_2Kh6g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
