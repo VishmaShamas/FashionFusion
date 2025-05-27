@@ -5,8 +5,10 @@ import 'package:fashion_fusion/screens/forgot_pass_page.dart';
 import 'package:fashion_fusion/screens/product_detail.dart';
 import 'package:fashion_fusion/screens/recommendation.dart';
 import 'package:fashion_fusion/screens/wardrobe.dart';
+import 'package:fashion_fusion/screens/get_started.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+
 import 'firebase_options.dart'; // If using the FlutterFire CLI
 
 void main() async {
@@ -18,7 +20,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +117,16 @@ class MenuList extends StatelessWidget {
                 );
               },
               child: Text('Wardrobe Page'),
+            ),
+            SizedBox(height: 50),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => GetStartedPage()),
+                );
+              },
+              child: Text('Get Started Page'),
             ),
           ],
         ),

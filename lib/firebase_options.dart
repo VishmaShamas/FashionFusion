@@ -41,48 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCfJ7V3CfVYHSUVCp_Th60AaJvOH_VoYvE',
-    appId: '1:158492273296:web:d88562425230ccd84bc615',
-    messagingSenderId: '158492273296',
-    projectId: 'fashion-fusion-c717a',
-    authDomain: 'fashion-fusion-c717a.firebaseapp.com',
-    storageBucket: 'fashion-fusion-c717a.firebasestorage.app',
-    measurementId: 'G-T9GSSKERCR',
+    apiKey: 'AIzaSyDi5LGV3hwqVJCwihmEx924_jy7sEGkDAA',
+    appId: '1:595060564964:web:d370a37077292d0c935df1',
+    messagingSenderId: '595060564964',
+    projectId: 'fashionfusion-aa06d',
+    authDomain: 'fashionfusion-aa06d.firebaseapp.com',
+    storageBucket: 'fashionfusion-aa06d.firebasestorage.app',
+    measurementId: 'G-66P1MTE8X2',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyB2N2DiYc7Rr8MqdXGQrEtwobY5n_2Kh6g',
-    appId: '1:158492273296:android:24b87005830afaac4bc615',
-    messagingSenderId: '158492273296',
-    projectId: 'fashion-fusion-c717a',
-    storageBucket: 'fashion-fusion-c717a.firebasestorage.app',
+    apiKey: 'AIzaSyB9VkbFuBZWpL0iEvcXY_hUUF0DIHqZ0vM',
+    appId: '1:595060564964:android:7c42b6cf654d7f55935df1',
+    messagingSenderId: '595060564964',
+    projectId: 'fashionfusion-aa06d',
+    storageBucket: 'fashionfusion-aa06d.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyB4-5LWv3okfc1ldidQFUJeDIa4FMfGufc',
-    appId: '1:158492273296:ios:b66d4bbb8f574b3e4bc615',
-    messagingSenderId: '158492273296',
-    projectId: 'fashion-fusion-c717a',
-    storageBucket: 'fashion-fusion-c717a.firebasestorage.app',
+    apiKey: 'AIzaSyBSC0Q3hLA_aTfsB3GRAG5pmXKE9Xu73Gs',
+    appId: '1:595060564964:ios:5ddcd0870091c384935df1',
+    messagingSenderId: '595060564964',
+    projectId: 'fashionfusion-aa06d',
+    storageBucket: 'fashionfusion-aa06d.firebasestorage.app',
     iosBundleId: 'com.example.fashionFusion',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyB4-5LWv3okfc1ldidQFUJeDIa4FMfGufc',
-    appId: '1:158492273296:ios:b66d4bbb8f574b3e4bc615',
-    messagingSenderId: '158492273296',
-    projectId: 'fashion-fusion-c717a',
-    storageBucket: 'fashion-fusion-c717a.firebasestorage.app',
+    apiKey: 'AIzaSyBSC0Q3hLA_aTfsB3GRAG5pmXKE9Xu73Gs',
+    appId: '1:595060564964:ios:5ddcd0870091c384935df1',
+    messagingSenderId: '595060564964',
+    projectId: 'fashionfusion-aa06d',
+    storageBucket: 'fashionfusion-aa06d.firebasestorage.app',
     iosBundleId: 'com.example.fashionFusion',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCfJ7V3CfVYHSUVCp_Th60AaJvOH_VoYvE',
-    appId: '1:158492273296:web:1ad5f44235e4392d4bc615',
-    messagingSenderId: '158492273296',
-    projectId: 'fashion-fusion-c717a',
-    authDomain: 'fashion-fusion-c717a.firebaseapp.com',
-    storageBucket: 'fashion-fusion-c717a.firebasestorage.app',
-    measurementId: 'G-77K7T7Z8YR',
+    apiKey: 'AIzaSyDi5LGV3hwqVJCwihmEx924_jy7sEGkDAA',
+    appId: '1:595060564964:web:2c1b1dcf649edad6935df1',
+    messagingSenderId: '595060564964',
+    projectId: 'fashionfusion-aa06d',
+    authDomain: 'fashionfusion-aa06d.firebaseapp.com',
+    storageBucket: 'fashionfusion-aa06d.firebasestorage.app',
+    measurementId: 'G-BKPXWKEQ2Q',
   );
+
 }
