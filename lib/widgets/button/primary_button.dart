@@ -1,5 +1,7 @@
-import 'package:fashion_fusion/consts/colors.dart';
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+
+import 'package:fashion_fusion/constants/colors.dart';
 
 class PrimaryButton extends StatefulWidget {
   final VoidCallback onTap;
@@ -8,16 +10,19 @@ class PrimaryButton extends StatefulWidget {
   final double? height;
   final double? borderRadius;
   final double? fontSize;
-  final Color? color;
+  final IconData? iconData;
+  final Color? textColor, color;
   const PrimaryButton({
+    Key? key,
     required this.onTap,
     required this.text,
-    this.height,
     this.width,
+    this.height,
     this.borderRadius,
     this.fontSize,
+    this.iconData,
+    this.textColor,
     this.color,
-    Key? key,
   }) : super(key: key);
 
   @override
@@ -75,13 +80,23 @@ class _PrimaryButtonState extends State<PrimaryButton>
               color: widget.color ?? AppColors.primary,
               borderRadius: BorderRadius.circular(widget.borderRadius ?? 20),
             ),
-            child: Text(
-              widget.text,
-              style: TextStyle(
-                color: widget.color == null ? AppColors.white : Colors.black,
-                fontSize: widget.fontSize ?? 16,
-                fontWeight: FontWeight.w600,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (widget.iconData != null) ...[
+                  Icon(widget.iconData, color: AppColors.white),
+                  const SizedBox(width: 4),
+                ],
+                Text(
+                  widget.text,
+                  style: TextStyle(
+                    color:
+                        widget.color == null ? AppColors.white : Colors.black,
+                    fontSize: widget.fontSize ?? 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

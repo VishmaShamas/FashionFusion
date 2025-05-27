@@ -1,4 +1,4 @@
-import 'package:fashion_fusion/consts/colors.dart';
+import 'package:fashion_fusion/constants/colors.dart';
 import 'package:fashion_fusion/screens/login_page.dart';
 import 'package:fashion_fusion/widgets/button/primary_button.dart';
 import 'package:fashion_fusion/widgets/cards/custom_gradient_card.dart';

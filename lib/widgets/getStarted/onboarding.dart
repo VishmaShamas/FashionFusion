@@ -1,4 +1,4 @@
-import 'package:fashion_fusion/consts/images.dart';
+import 'package:fashion_fusion/constants/images.dart';
 
 class Onboarding {
   String bgImage;

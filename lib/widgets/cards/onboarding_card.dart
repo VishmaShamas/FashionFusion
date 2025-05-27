@@ -1,5 +1,5 @@
 import 'package:animate_do/animate_do.dart';
-import 'package:fashion_fusion/consts/colors.dart';
+import 'package:fashion_fusion/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:fashion_fusion/widgets/getStarted/onboarding.dart';
 

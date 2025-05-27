@@ -51,7 +51,7 @@ class MenuList extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
                 );
               },
               child: Text('Login Page'),
@@ -61,7 +61,7 @@ class MenuList extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SignupPage()),
+                  MaterialPageRoute(builder: (context) => SignUpScreen()),
                 );
               },
               child: Text('Signup Page'),
