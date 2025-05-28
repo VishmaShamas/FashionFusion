@@ -58,7 +58,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
                   if (currentIndex == onboardingList.length - 1) {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => LoginPage()),
+                      MaterialPageRoute(builder: (context) => LoginScreen()),
                     );
                   } else {
                     pageController.nextPage(
