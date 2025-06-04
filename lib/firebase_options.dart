@@ -64,6 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '595060564964',
     projectId: 'fashionfusion-aa06d',
     storageBucket: 'fashionfusion-aa06d.firebasestorage.app',
+    iosClientId: '595060564964-cugjqph181okp0nomondlp0bfbtcp1gl.apps.googleusercontent.com',
     iosBundleId: 'com.example.fashionFusion',
   );
 
@@ -73,6 +74,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '595060564964',
     projectId: 'fashionfusion-aa06d',
     storageBucket: 'fashionfusion-aa06d.firebasestorage.app',
+    iosClientId: '595060564964-cugjqph181okp0nomondlp0bfbtcp1gl.apps.googleusercontent.com',
     iosBundleId: 'com.example.fashionFusion',
   );
 

@@ -8,14 +8,13 @@ import 'package:fashion_fusion/screens/wardrobe.dart';
 import 'package:fashion_fusion/screens/get_started.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-
-import 'firebase_options.dart'; // If using the FlutterFire CLI
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // Or manually configure
-  );
+await Firebase.initializeApp(
+  options: DefaultFirebaseOptions.currentPlatform,
+);
   runApp(const MyApp());
 }
 
@@ -41,96 +40,97 @@ class MenuList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        // This centers the Column on the screen
-        child: Column(
-          mainAxisSize:
-              MainAxisSize.min, // Shrinks the column to fit the children
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
-                );
-              },
-              child: Text('Login Page'),
-            ),
-            SizedBox(height: 50),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => SignUpScreen()),
-                );
-              },
-              child: Text('Signup Page'),
-            ),
-            SizedBox(height: 50),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
-                );
-              },
-              child: Text('Home Page'),
-            ),
-            SizedBox(height: 50),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ForgotPasswordPage()),
-                );
-              },
-              child: Text('Forgot Page'),
-            ),
-            SizedBox(height: 50),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProductDetailPage()),
-                );
-              },
-              child: Text('Product Detail Page'),
-            ),
-            SizedBox(height: 50),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PersonalizedRecommendationPage(),
-                  ),
-                );
-              },
-              child: Text('Recommendation Page'),
-            ),
-            SizedBox(height: 50),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => WardrobePage()),
-                );
-              },
-              child: Text('Wardrobe Page'),
-            ),
-            SizedBox(height: 50),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => GetStartedPage()),
-                );
-              },
-              child: Text('Get Started Page'),
-            ),
-          ],
-        ),
-      ),
+      body: GetStartedPage() 
+      // Center(
+      //   // This centers the Column on the screen
+      //   child: Column(
+      //     mainAxisSize:
+      //         MainAxisSize.min, // Shrinks the column to fit the children
+      //     children: [
+      //       ElevatedButton(
+      //         onPressed: () {
+      //           Navigator.push(
+      //             context,
+      //             MaterialPageRoute(builder: (context) => LoginScreen()),
+      //           );
+      //         },
+      //         child: Text('Login Page'),
+      //       ),
+      //       SizedBox(height: 50),
+      //       ElevatedButton(
+      //         onPressed: () {
+      //           Navigator.push(
+      //             context,
+      //             MaterialPageRoute(builder: (context) => SignUpScreen()),
+      //           );
+      //         },
+      //         child: Text('Signup Page'),
+      //       ),
+      //       SizedBox(height: 50),
+      //       ElevatedButton(
+      //         onPressed: () {
+      //           Navigator.push(
+      //             context,
+      //             MaterialPageRoute(builder: (context) => HomePage()),
+      //           );
+      //         },
+      //         child: Text('Home Page'),
+      //       ),
+      //       SizedBox(height: 50),
+      //       ElevatedButton(
+      //         onPressed: () {
+      //           Navigator.push(
+      //             context,
+      //             MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+      //           );
+      //         },
+      //         child: Text('Forgot Page'),
+      //       ),
+      //       SizedBox(height: 50),
+      //       ElevatedButton(
+      //         onPressed: () {
+      //           Navigator.push(
+      //             context,
+      //             MaterialPageRoute(builder: (context) => ProductDetailPage()),
+      //           );
+      //         },
+      //         child: Text('Product Detail Page'),
+      //       ),
+      //       SizedBox(height: 50),
+      //       ElevatedButton(
+      //         onPressed: () {
+      //           Navigator.push(
+      //             context,
+      //             MaterialPageRoute(
+      //               builder: (context) => PersonalizedRecommendationPage(),
+      //             ),
+      //           );
+      //         },
+      //         child: Text('Recommendation Page'),
+      //       ),
+      //       SizedBox(height: 50),
+      //       ElevatedButton(
+      //         onPressed: () {
+      //           Navigator.push(
+      //             context,
+      //             MaterialPageRoute(builder: (context) => WardrobePage()),
+      //           );
+      //         },
+      //         child: Text('Wardrobe Page'),
+      //       ),
+      //       SizedBox(height: 50),
+      //       ElevatedButton(
+      //         onPressed: () {
+      //           Navigator.push(
+      //             context,
+      //             MaterialPageRoute(builder: (context) => GetStartedPage()),
+      //           );
+      //         },
+      //         child: Text('Get Started Page'),
+      //       ),
+      //     ],
+      //   ),
+      // ),
     );
   }
 }

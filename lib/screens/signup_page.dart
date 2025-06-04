@@ -1,8 +1,12 @@
+// show error
 import 'package:fashion_fusion/constants/colors.dart';
+import 'package:fashion_fusion/screens/login_page.dart';
+import 'package:fashion_fusion/services/auth_service.dart';
 import 'package:fashion_fusion/widgets/button/primary_button.dart';
 import 'package:fashion_fusion/widgets/container/background_image_container.dart';
 import 'package:fashion_fusion/widgets/text/custom_rich_text.dart';
 import 'package:fashion_fusion/widgets/text/primary_text_form_field.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 // ignore: must_be_immutable
@@ -12,6 +16,14 @@ class SignUpScreen extends StatelessWidget {
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passController = TextEditingController();
+
+  void register() async {
+    try {
+      await authService.value.createAccount(email: emailController.text, password: passController.text);
+    } on FirebaseAuthException catch (e) {
+      print(e.message);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +145,9 @@ class SignUpScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         PrimaryButton(
-                          onTap: () {},
+                          onTap: () {
+                            register();
+                          },
                           text: 'Create Account',
                           borderRadius: 8,
                           fontSize: 14,
@@ -146,7 +160,9 @@ class SignUpScreen extends StatelessWidget {
                         CustomRichText(
                           title: 'Log in',
                           subtitle: 'Already have an account',
-                          onTab: () {},
+                          onTab: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+                          },
                           subtitleTextStyle: TextStyle(
                             color: AppColors.primary,
                             fontSize: 14,
