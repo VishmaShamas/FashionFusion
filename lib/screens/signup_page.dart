@@ -4,6 +4,7 @@ import 'package:fashion_fusion/screens/login_page.dart';
 import 'package:fashion_fusion/services/auth_service.dart';
 import 'package:fashion_fusion/widgets/button/primary_button.dart';
 import 'package:fashion_fusion/widgets/container/background_image_container.dart';
+import 'package:fashion_fusion/widgets/container/background_video_container.dart';
 import 'package:fashion_fusion/widgets/text/custom_rich_text.dart';
 import 'package:fashion_fusion/widgets/text/primary_text_form_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,7 +20,10 @@ class SignUpScreen extends StatelessWidget {
 
   void register() async {
     try {
-      await authService.value.createAccount(email: emailController.text, password: passController.text);
+      await authService.value.createAccount(
+        email: emailController.text,
+        password: passController.text,
+      );
     } on FirebaseAuthException catch (e) {
       print(e.message);
     }
@@ -27,7 +31,7 @@ class SignUpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BackgroundImageContainer(
+    return BackgroundVideoContainer(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SingleChildScrollView(
@@ -161,7 +165,12 @@ class SignUpScreen extends StatelessWidget {
                           title: 'Log in',
                           subtitle: 'Already have an account',
                           onTab: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => LoginScreen(),
+                              ),
+                            );
                           },
                           subtitleTextStyle: TextStyle(
                             color: AppColors.primary,

@@ -17,4 +17,5 @@ class AppColors {
     end: Alignment.bottomCenter,
     colors: [const Color(0xFF110C1D).withOpacity(0.0), const Color(0xFF110C1D)],
   );
+  static const pinkColor = Color(0XFFfb6e63);
 }

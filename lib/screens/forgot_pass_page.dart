@@ -1,3 +1,4 @@
+import 'package:fashion_fusion/widgets/container/background_video_container.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fashion_fusion/constants/colors.dart';
@@ -59,7 +60,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BackgroundImageContainer(
+    return BackgroundVideoContainer(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SingleChildScrollView(
@@ -83,7 +84,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
                   width: 358,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 24,
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     color: AppColors.samiDarkColor.withOpacity(0.4),

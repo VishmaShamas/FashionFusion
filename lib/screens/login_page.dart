@@ -9,6 +9,7 @@ import 'package:fashion_fusion/services/auth_service.dart';
 import 'package:fashion_fusion/widgets/button/primary_button.dart';
 import 'package:fashion_fusion/widgets/button/secondary_button.dart';
 import 'package:fashion_fusion/widgets/container/background_image_container.dart';
+import 'package:fashion_fusion/widgets/container/background_video_container.dart';
 import 'package:fashion_fusion/widgets/text/custom_rich_text.dart';
 import 'package:fashion_fusion/widgets/text/primary_text_form_field.dart';
 import 'package:fashion_fusion/widgets/ui/divider_row.dart';
@@ -50,16 +51,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void loginWithGoogle(BuildContext context) async {
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-    final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth?.accessToken,
       idToken: googleAuth?.idToken,
     );
 
     try {
-      await FirebaseAuth.instance.signInWithCredential(credential);  
-      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
-
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
     } on FirebaseAuthException catch (e) {
       print(e.message);
     }
@@ -67,17 +71,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void loginWithApple(BuildContext context) async {
     try {
-      if(!Platform.isIOS) {
+      if (!Platform.isIOS) {
         setState(() {
           errorMsg = 'Apple Sign-In is only available on Apple devices';
           return;
         });
       }
 
-      final appleCredential = await SignInWithApple.getAppleIDCredential(scopes: [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName,
-      ]);
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
 
       final oauthCredential = OAuthProvider("apple.com").credential(
         idToken: appleCredential.identityToken,
@@ -86,12 +92,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
       await FirebaseAuth.instance.signInWithCredential(oauthCredential);
 
-      Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
-    } on SignInWithAppleAuthorizationException catch(e) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
+    } on SignInWithAppleAuthorizationException catch (e) {
       setState(() {
         errorMsg = e.message;
       });
-    } on FirebaseAuthException catch(e) {
+    } on FirebaseAuthException catch (e) {
       setState(() {
         errorMsg = e.message;
       });
@@ -107,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BackgroundImageContainer(
+    return BackgroundVideoContainer(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SingleChildScrollView(
@@ -188,7 +197,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 16),
                         PrimaryTextButton(
                           onPressed: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => ForgotPasswordScreen()));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ForgotPasswordScreen(),
+                              ),
+                            );
                           },
                           textColor: AppColors.primary,
                           title: 'Forgot Password',
@@ -227,7 +241,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           title: "Don't have an account",
                           subtitle: ' Sign up',
                           onTab: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpScreen()));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SignUpScreen(),
+                              ),
+                            );
                           },
                           subtitleTextStyle: TextStyle(
                             color: AppColors.primary,

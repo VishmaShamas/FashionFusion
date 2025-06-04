@@ -7,3 +7,7 @@ class AppAssets {
   static String googleLogo = 'assets/logo/google.png';
   static String appleLogo = 'assets/logo/google.jpg';
 }
+
+class VideoAsset {
+  static String authBg = 'assets/video/bg.htm';
+}
