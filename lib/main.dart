@@ -1,11 +1,4 @@
-import 'package:fashion_fusion/screens/login_page.dart';
-import 'package:fashion_fusion/screens/signup_page.dart';
-import 'package:fashion_fusion/screens/home_page.dart';
-import 'package:fashion_fusion/screens/forgot_pass_page.dart';
-import 'package:fashion_fusion/screens/product_detail.dart';
-import 'package:fashion_fusion/screens/recommendation.dart';
-import 'package:fashion_fusion/screens/wardrobe.dart';
-import 'package:fashion_fusion/screens/get_started.dart';
+import 'package:fashion_fusion/screens/page_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -38,7 +31,7 @@ class MenuList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: HomePage(),
+      body: PageWrapper(),
       // Center(
       //   // This centers the Column on the screen
       //   child: Column(

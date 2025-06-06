@@ -2,7 +2,6 @@ import 'package:fashion_fusion/widgets/container/background_video_container.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fashion_fusion/constants/colors.dart';
-import 'package:fashion_fusion/widgets/container/background_image_container.dart';
 import 'package:fashion_fusion/widgets/text/primary_text_form_field.dart';
 import 'package:fashion_fusion/widgets/button/primary_button.dart';
 
@@ -90,9 +89,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
+                    // ignore: deprecated_member_use
                     color: AppColors.samiDarkColor.withOpacity(0.4),
                     boxShadow: [
                       BoxShadow(
+                        // ignore: deprecated_member_use
                         color: AppColors.samiDarkColor.withOpacity(0.5),
                         blurRadius: 10,
                       ),

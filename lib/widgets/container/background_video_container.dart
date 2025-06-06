@@ -48,6 +48,7 @@ class _BackgroundVideoContainerState extends State<BackgroundVideoContainer> {
             ),
           ),
         Container(
+          // ignore: deprecated_member_use
           color: Colors.black.withOpacity(0.3),
         ), // Optional dark overlay
         widget.child,

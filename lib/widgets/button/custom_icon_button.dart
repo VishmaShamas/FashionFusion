@@ -17,6 +17,7 @@ class CustomIconButton extends StatelessWidget {
               offset: const Offset(12, 26),
               blurRadius: 50,
               spreadRadius: 0,
+              // ignore: deprecated_member_use
               color: Colors.grey.withOpacity(.25),
             ),
           ],

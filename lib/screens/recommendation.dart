@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/colors.dart';
 
 class PersonalizedRecommendationPage extends StatefulWidget {
   const PersonalizedRecommendationPage({super.key});
@@ -7,6 +8,7 @@ class PersonalizedRecommendationPage extends StatefulWidget {
   State<PersonalizedRecommendationPage> createState() =>
       _PersonalizedRecommendationPageState();
 }
+
 
 class _PersonalizedRecommendationPageState
     extends State<PersonalizedRecommendationPage> {
@@ -20,136 +22,197 @@ class _PersonalizedRecommendationPageState
     'https://via.placeholder.com/300x400.png?text=Outfit+6',
   ];
 
+  final Set<String> _likedOutfits = {};
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Title
-              const Text(
-                'Personalized Recommendation',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    return Container(
+      color: AppColors.backroundColor,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 10),
+            const Text(
+              'Personalized Recommendations',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
-              const SizedBox(height: 8),
-
-              // Search Bar with camera icon on the right
-              Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 8),
-                    const Icon(Icons.search, color: Colors.grey),
-                    const SizedBox(width: 8),
-                    const Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Type here',
-                          border: InputBorder.none,
-                        ),
+            ),
+            const SizedBox(height: 18),
+            // Search Bar
+            Container(
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.samiDarkColor,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 12),
+                  const Icon(Icons.search, color: Colors.white54),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: TextField(
+                      style: TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'Search styles or outfits',
+                        hintStyle: TextStyle(color: Colors.white38),
+                        border: InputBorder.none,
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.camera_alt_outlined),
-                      onPressed: () {
-                        // Open camera or image picker for style-based search
-                      },
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Grid of recommended outfits
-              GridView.builder(
-                itemCount: _outfitImages.length,
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  // Adjust aspect ratio for your images
-                  childAspectRatio: 0.7,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemBuilder: (context, index) {
-                  return _buildOutfitCard(_outfitImages[index]);
-                },
-              ),
-
-              const SizedBox(height: 12),
-
-              // More button
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
                   ),
-                  onPressed: () {
-                    // Load more outfits, show more details, or navigate
-                  },
-                  child: const Text(
-                    'More',
-                    style: TextStyle(color: Colors.white),
+                  IconButton(
+                    icon: const Icon(Icons.camera_alt_outlined, color: Colors.white70),
+                    onPressed: () {
+                      // Open camera or image picker for style-based search
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Trending Styles Horizontal Scroll
+            const Text(
+              'Trending Styles',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 110,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: 5,
+                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                itemBuilder: (context, i) => Container(
+                  width: 90,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: AppColors.samiDarkColor,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.network(
+                      _outfitImages[i % _outfitImages.length],
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),
-
-              const SizedBox(height: 16),
-            ],
+            ),
+            const SizedBox(height: 28),
+            // Outfits Grid
+          GridView.builder(
+            itemCount: _outfitImages.length,
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.7,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+            ),
+            itemBuilder: (context, index) {
+              return Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.samiDarkColor,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          // ignore: deprecated_member_use
+                          color: Colors.black.withOpacity(0.10),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Image.network(
+                        _outfitImages[index],
+                        height: 220,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 50, color: Colors.white24),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 10,
+                    child: StatefulBuilder(
+                    builder: (context, setState) {
+                      final bool isLiked = _likedOutfits.contains(_outfitImages[index]);
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: Icon(
+                            isLiked ? Icons.favorite : Icons.favorite_border,
+                            color: isLiked ? Colors.red : Colors.white,
+                            size: 22,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              if (isLiked) {
+                                _likedOutfits.remove(_outfitImages[index]);
+                              } else {
+                                _likedOutfits.add(_outfitImages[index]);
+                              }
+                            });
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  ),
+                ],
+              );
+            },
           ),
-        ),
+          const SizedBox(height: 20),
+          // See More Button
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              onPressed: () {
+                // Load more outfits or show more recommendations
+              },
+              child: const Text(
+                'See More',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
       ),
-      // Optional bottom navigation bar
-      bottomNavigationBar: _buildBottomNavigationBar(),
-    );
-  }
-
-  Widget _buildOutfitCard(String imageUrl) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Image.network(imageUrl, fit: BoxFit.cover),
-      ),
-    );
-  }
-
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      currentIndex: 0,
-      onTap: (index) {
-        // Navigate to other pages if needed
-      },
-      selectedItemColor: Colors.purple.shade700,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.star_border),
-          label: 'Wishlist',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          label: 'Profile',
-        ),
-      ],
-    );
+    ),
+  );
   }
 }

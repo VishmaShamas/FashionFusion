@@ -4,6 +4,7 @@ class TaskProgressCard extends StatefulWidget {
   const TaskProgressCard({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _TaskProgressCardState createState() => _TaskProgressCardState();
 }
 

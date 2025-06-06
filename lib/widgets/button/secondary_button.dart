@@ -105,6 +105,7 @@ class _SecondaryButtonState extends State<SecondaryButton>
                   padding: const EdgeInsets.only(right: 10.0),
                   child: SvgPicture.asset(
                     widget.icons,
+                    // ignore: deprecated_member_use
                     color: Colors.transparent,
                     width: 20,
                     height: 20,

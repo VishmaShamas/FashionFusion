@@ -2,19 +2,20 @@ import 'package:fashion_fusion/constants/colors.dart';
 import 'package:flutter/material.dart';
 
 class CustomFloatingNavBar extends StatefulWidget {
-  final int currentIndex;
+  final int currentIndex = 2;
   final ValueChanged<int> onTap;
+  final List<Widget> pages;
   final Color backgroundColor;
   final Color selectedColor;
   final Color defaultColor;
 
   const CustomFloatingNavBar({
     super.key,
-    required this.currentIndex,
     required this.onTap,
+    required this.pages,
     this.backgroundColor = Colors.black,
     this.selectedColor = AppColors.primary,
-    this.defaultColor = Colors.grey,
+    this.defaultColor = Colors.grey, required int currentIndex,
   });
 
   @override
@@ -26,7 +27,7 @@ class _CustomFloatingNavBarState extends State<CustomFloatingNavBar> {
   Widget build(BuildContext context) {
     return Container(
       height: 50, // Reduced height
-      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 80, vertical: 10),
       decoration: BoxDecoration(
         color: widget.backgroundColor,
         borderRadius: BorderRadius.circular(
@@ -34,6 +35,7 @@ class _CustomFloatingNavBarState extends State<CustomFloatingNavBar> {
         ), // Smaller radius for straighter look
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.grey.withOpacity(0.7),
             spreadRadius: 2,
             blurRadius: 10,

@@ -3,11 +3,11 @@ import 'package:fashion_fusion/constants/colors.dart';
 import 'package:fashion_fusion/screens/login_page.dart';
 import 'package:fashion_fusion/services/auth_service.dart';
 import 'package:fashion_fusion/widgets/button/primary_button.dart';
-import 'package:fashion_fusion/widgets/container/background_image_container.dart';
 import 'package:fashion_fusion/widgets/container/background_video_container.dart';
 import 'package:fashion_fusion/widgets/text/custom_rich_text.dart';
 import 'package:fashion_fusion/widgets/text/primary_text_form_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 // ignore: must_be_immutable
@@ -25,7 +25,9 @@ class SignUpScreen extends StatelessWidget {
         password: passController.text,
       );
     } on FirebaseAuthException catch (e) {
-      print(e.message);
+      if (kDebugMode) {
+        print(e.message);
+      }
     }
   }
 
@@ -65,9 +67,11 @@ class SignUpScreen extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
+                    // ignore: deprecated_member_use
                     color: AppColors.samiDarkColor.withOpacity(0.4),
                     boxShadow: [
                       BoxShadow(
+                        // ignore: deprecated_member_use
                         color: AppColors.samiDarkColor.withOpacity(0.5),
                         blurRadius: 10,
                       ),

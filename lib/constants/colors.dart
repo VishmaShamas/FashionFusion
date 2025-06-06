@@ -15,7 +15,7 @@ class AppColors {
   static LinearGradient customOnBoardingGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [const Color(0xFF110C1D).withOpacity(0.0), const Color(0xFF110C1D)],
+    colors: [const Color(0xFF110C1D).withValues(alpha: 0.0), const Color(0xFF110C1D)],
   );
   static const pinkColor = Color(0XFFfb6e63);
 }

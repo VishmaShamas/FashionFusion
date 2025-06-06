@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:developer';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
 class AddToWardrobeImagePicker extends StatefulWidget {
@@ -55,6 +54,7 @@ class _AddToWardrobeImagePickerState extends State<AddToWardrobeImagePicker> {
       });
     } else {
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(const SnackBar(content: Text('No image selected')));
     }

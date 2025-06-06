@@ -18,6 +18,7 @@ class CustomLikeButton extends StatelessWidget {
       likeBuilder: (bool isLiked) {
         return Icon(
           Icons.favorite,
+          // ignore: deprecated_member_use
           color: isLiked ? Colors.red : Colors.grey.withOpacity(0.5),
           size: 40,
         );
