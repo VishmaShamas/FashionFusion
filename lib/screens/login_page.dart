@@ -8,7 +8,7 @@ import 'package:fashion_fusion/screens/signup_page.dart';
 import 'package:fashion_fusion/services/auth_service.dart';
 import 'package:fashion_fusion/widgets/button/primary_button.dart';
 import 'package:fashion_fusion/widgets/button/secondary_button.dart';
-import 'package:fashion_fusion/widgets/container/background_video_container.dart';
+import 'package:fashion_fusion/widgets/container/background_image_container.dart';
 import 'package:fashion_fusion/widgets/text/custom_rich_text.dart';
 import 'package:fashion_fusion/widgets/text/primary_text_form_field.dart';
 import 'package:fashion_fusion/widgets/ui/divider_row.dart';
@@ -121,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BackgroundVideoContainer(
+    return BackgroundImageContainer(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SingleChildScrollView(
@@ -131,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Padding(
                 padding: const EdgeInsets.only(
                   top: 235,
-                  right: 263,
+                  right: 200,
                   bottom: 15,
                   left: 32,
                 ),
@@ -169,6 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: Colors.transparent,
                     child: Column(
                       children: [
+                        // email inout
                         PrimaryTextFormField(
                           hintText: 'Email',
                           controller: emailController,
@@ -180,6 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           fillColor: AppColors.lightAccentColor,
                         ),
                         const SizedBox(height: 16),
+                        // psss input
                         PrimaryTextFormField(
                           hintText: 'Password',
                           controller: passController,
@@ -191,6 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           fillColor: AppColors.lightAccentColor,
                         ),
                         const SizedBox(height: 16),
+                        // logiu
                         PrimaryButton(
                           onTap: () => login(context),
                           text: 'Login',
@@ -202,6 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: AppColors.primary,
                         ),
                         const SizedBox(height: 16),
+                        //  forgot pass
                         PrimaryTextButton(
                           onPressed: () {
                             Navigator.push(

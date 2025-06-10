@@ -49,6 +49,14 @@ dependencies:
   like_button: ^2.1.0
   loading_animation_widget: ^1.3.0
   flutter_staggered_grid_view: ^0.7.0
+  shared_preferences: ^2.5.3
+  flutter_native_splash: ^2.4.0
+  firebase_storage: ^12.4.6
+  googleapis: ^14.0.0
+  googleapis_auth: ^2.0.0
+  http: ^1.4.0
+  uuid: ^4.5.1
+  path_provider: ^2.1.5
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -80,19 +88,10 @@ flutter:
     - assets/auth/
     - assets/logo/
     - assets/video/
+    - assets/cred/
+    - assets/cred/wardrobe.json
   #   - images/a_dot_ham.jpeg
 
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/to/resolution-aware-images
-
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/to/asset-from-package
-
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
   # fonts:
   #   - family: Schyler
   #     fonts:
@@ -107,3 +106,11 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_native_splash:
+  color: '#333' # background color
+  image: assets/logo/slogo.png # your logo path
+  android: true
+  ios: true
+# 1decab43dfcb819bafeb1b2a3e580283484d3ee4
+
+# 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

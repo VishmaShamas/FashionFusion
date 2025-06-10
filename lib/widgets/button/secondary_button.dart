@@ -9,17 +9,18 @@ class SecondaryButton extends StatefulWidget {
   final double? borderRadius;
   final double? fontSize;
   final Color? textColor, bgColor;
-  const SecondaryButton(
-      {super.key,
-      required this.onTap,
-      required this.text,
-      this.width,
-      this.height,
-      required this.icons,
-      this.borderRadius,
-      this.fontSize,
-      this.textColor,
-      this.bgColor});
+  const SecondaryButton({
+    super.key,
+    required this.onTap,
+    required this.text,
+    this.width,
+    this.height,
+    required this.icons,
+    this.borderRadius,
+    this.fontSize,
+    this.textColor,
+    this.bgColor,
+  });
 
   @override
   State<SecondaryButton> createState() => _SecondaryButtonState();
@@ -32,10 +33,8 @@ class _SecondaryButtonState extends State<SecondaryButton>
   final Tween<double> _tween = Tween<double>(begin: 1.0, end: 0.95);
   @override
   void initState() {
-    _controller = AnimationController(
-      vsync: this,
-      duration: _animationDuration,
-    )..addListener(() {
+    _controller = AnimationController(vsync: this, duration: _animationDuration)
+      ..addListener(() {
         setState(() {});
       });
     super.initState();
@@ -82,11 +81,7 @@ class _SecondaryButtonState extends State<SecondaryButton>
                 // SizedBox(width: 15.w),
                 Padding(
                   padding: const EdgeInsets.only(left: 10.0),
-                  child: SvgPicture.asset(
-                    widget.icons,
-                    width: 20,
-                    height: 20,
-                  ),
+                  child: SvgPicture.asset(widget.icons, width: 20, height: 20),
                 ),
                 const Spacer(),
                 Center(
@@ -94,10 +89,11 @@ class _SecondaryButtonState extends State<SecondaryButton>
                     widget.text,
                     textAlign: TextAlign.left,
                     style: TextStyle(
-                        color: widget.textColor,
-                        fontSize: widget.fontSize,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'Inter'),
+                      color: widget.textColor,
+                      fontSize: widget.fontSize,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Inter',
+                    ),
                   ),
                 ),
                 const Spacer(),
@@ -110,7 +106,7 @@ class _SecondaryButtonState extends State<SecondaryButton>
                     width: 20,
                     height: 20,
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -119,4 +115,3 @@ class _SecondaryButtonState extends State<SecondaryButton>
     );
   }
 }
-

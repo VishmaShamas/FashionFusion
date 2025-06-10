@@ -1,7 +1,7 @@
-import 'package:fashion_fusion/widgets/container/background_video_container.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fashion_fusion/constants/colors.dart';
+import 'package:fashion_fusion/widgets/container/background_image_container.dart';
 import 'package:fashion_fusion/widgets/text/primary_text_form_field.dart';
 import 'package:fashion_fusion/widgets/button/primary_button.dart';
 
@@ -59,21 +59,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BackgroundVideoContainer(
+    return BackgroundImageContainer(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SingleChildScrollView(
-          padding: const EdgeInsets.only(top: 200),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 235),
               const Padding(
-                padding: EdgeInsets.only(left: 32, bottom: 15),
+                padding: EdgeInsets.only(left: 32, right: 150, bottom: 15),
                 child: Text(
                   'Forgot Password',
                   style: TextStyle(
                     fontSize: 32,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w900,
                     fontFamily: 'Inter',
                     color: AppColors.lightAccentColor,
                   ),
@@ -113,7 +112,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       const SizedBox(height: 16),
                       PrimaryButton(
-                        onTap: () {},
+                        onTap: sendResetEmail,
                         text: isLoading ? 'Sending...' : 'Send Reset Link',
                         borderRadius: 8,
                         fontSize: 14,

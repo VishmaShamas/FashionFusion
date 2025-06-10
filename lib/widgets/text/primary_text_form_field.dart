@@ -58,7 +58,7 @@ class PrimaryTextFormField extends StatelessWidget {
           fontFamily: 'Inter',
           fontSize: 14,
           fontWeight: FontWeight.w400,
-          color: AppColors.greyColor,
+          color: AppColors.blackColor,
         ),
         decoration: InputDecoration(
           fillColor: fillColor ?? AppColors.lightAccentColor,
@@ -72,7 +72,7 @@ class PrimaryTextFormField extends StatelessWidget {
             fontFamily: 'Inter',
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: hintTextColor ?? AppColors.greyColor,
+            color: hintTextColor ?? AppColors.blackColor,
           ),
           prefixIcon: prefixIcon,
           prefixIconColor: prefixIconColor,

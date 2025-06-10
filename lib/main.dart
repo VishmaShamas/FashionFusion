@@ -1,6 +1,11 @@
+import 'package:fashion_fusion/screens/get_started.dart';
+import 'package:fashion_fusion/screens/login_page.dart';
 import 'package:fashion_fusion/screens/page_wrapper.dart';
+import 'package:fashion_fusion/widgets/ui/loader.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -16,112 +21,63 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'FashionFusion',
-      theme: ThemeData(
-        primarySwatch: Colors.purple,
-        fontFamily: 'Roboto', // Customize your font
-      ),
-      home: MenuList(),
+      theme: ThemeData(primarySwatch: Colors.purple, fontFamily: 'Roboto'),
+      home: const AuthGate(),
     );
   }
 }
 
-class MenuList extends StatelessWidget {
-  const MenuList({super.key});
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key});
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  bool isFirstLaunch = true;
+  bool loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkFirstLaunch();
+  }
+
+  Future<void> _checkFirstLaunch() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isFirst = prefs.getBool('isFirstLaunch') ?? true;
+
+    if (isFirst) {
+      await prefs.setBool('isFirstLaunch', false);
+      setState(() {
+        isFirstLaunch = true;
+        loading = false;
+      });
+    } else {
+      setState(() {
+        isFirstLaunch = false;
+        loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: PageWrapper(),
-      // Center(
-      //   // This centers the Column on the screen
-      //   child: Column(
-      //     mainAxisSize:
-      //         MainAxisSize.min, // Shrinks the column to fit the children
-      //     children: [
-      //       ElevatedButton(
-      //         onPressed: () {
-      //           Navigator.push(
-      //             context,
-      //             MaterialPageRoute(builder: (context) => LoginScreen()),
-      //           );
-      //         },
-      //         child: Text('Login Page'),
-      //       ),
-      //       SizedBox(height: 50),
-      //       ElevatedButton(
-      //         onPressed: () {
-      //           Navigator.push(
-      //             context,
-      //             MaterialPageRoute(builder: (context) => SignUpScreen()),
-      //           );
-      //         },
-      //         child: Text('Signup Page'),
-      //       ),
-      //       SizedBox(height: 50),
-      //       ElevatedButton(
-      //         onPressed: () {
-      //           Navigator.push(
-      //             context,
-      //             MaterialPageRoute(builder: (context) => HomePage()),
-      //           );
-      //         },
-      //         child: Text('Home Page'),
-      //       ),
-      //       SizedBox(height: 50),
-      //       ElevatedButton(
-      //         onPressed: () {
-      //           Navigator.push(
-      //             context,
-      //             MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
-      //           );
-      //         },
-      //         child: Text('Forgot Page'),
-      //       ),
-      //       SizedBox(height: 50),
-      //       ElevatedButton(
-      //         onPressed: () {
-      //           Navigator.push(
-      //             context,
-      //             MaterialPageRoute(builder: (context) => ProductDetailPage()),
-      //           );
-      //         },
-      //         child: Text('Product Detail Page'),
-      //       ),
-      //       SizedBox(height: 50),
-      //       ElevatedButton(
-      //         onPressed: () {
-      //           Navigator.push(
-      //             context,
-      //             MaterialPageRoute(
-      //               builder: (context) => PersonalizedRecommendationPage(),
-      //             ),
-      //           );
-      //         },
-      //         child: Text('Recommendation Page'),
-      //       ),
-      //       SizedBox(height: 50),
-      //       ElevatedButton(
-      //         onPressed: () {
-      //           Navigator.push(
-      //             context,
-      //             MaterialPageRoute(builder: (context) => WardrobePage()),
-      //           );
-      //         },
-      //         child: Text('Wardrobe Page'),
-      //       ),
-      //       SizedBox(height: 50),
-      //       ElevatedButton(
-      //         onPressed: () {
-      //           Navigator.push(
-      //             context,
-      //             MaterialPageRoute(builder: (context) => GetStartedPage()),
-      //           );
-      //         },
-      //         child: Text('Get Started Page'),
-      //       ),
-      //     ],
-      //   ),
-      // ),
-    );
+    if (loading) {
+      return const Scaffold(body: Center(child: CustomLoadingAnimation()));
+    }
+
+    if (isFirstLaunch) {
+      return const GetStartedPage();
+    }
+
+    // Not first launch: now check FirebaseAuth
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      return const PageWrapper(); // Logged in
+    } else {
+      return const LoginScreen(); // Not logged in
+    }
   }
 }

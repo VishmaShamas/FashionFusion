@@ -2,20 +2,19 @@ import 'package:fashion_fusion/constants/colors.dart';
 import 'package:flutter/material.dart';
 
 class CustomFloatingNavBar extends StatefulWidget {
-  final int currentIndex = 2;
+  final int currentIndex;
   final ValueChanged<int> onTap;
-  final List<Widget> pages;
   final Color backgroundColor;
   final Color selectedColor;
   final Color defaultColor;
 
   const CustomFloatingNavBar({
     super.key,
+    required this.currentIndex,
     required this.onTap,
-    required this.pages,
     this.backgroundColor = Colors.black,
     this.selectedColor = AppColors.primary,
-    this.defaultColor = Colors.grey, required int currentIndex,
+    this.defaultColor = Colors.grey,
   });
 
   @override
@@ -26,13 +25,11 @@ class _CustomFloatingNavBarState extends State<CustomFloatingNavBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 50, // Reduced height
-      margin: const EdgeInsets.symmetric(horizontal: 80, vertical: 10),
+      height: 60, // Slightly increased height to prevent overflow
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
         color: widget.backgroundColor,
-        borderRadius: BorderRadius.circular(
-          25,
-        ), // Smaller radius for straighter look
+        borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
             // ignore: deprecated_member_use
@@ -44,36 +41,51 @@ class _CustomFloatingNavBarState extends State<CustomFloatingNavBar> {
         ],
       ),
       child: Stack(
+        clipBehavior: Clip.none, // Important to prevent clipping of FAB
         children: [
           // Horizontal divider
           const Align(
             alignment: Alignment.topCenter,
             child: Divider(height: 1, thickness: 0.5, color: Colors.black12),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // Left side items
-              _buildNavItem(icon: Icons.favorite, index: 0),
-              _buildNavItem(icon: Icons.shopping_bag, index: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Left side items
+                _buildNavItem(
+                  icon: Icons.favorite,
+                  index: 0,
+                  label: 'Wishlist',
+                ),
+                _buildNavItem(
+                  icon: Icons.shopping_bag,
+                  index: 1,
+                  label: 'Cart',
+                ),
 
-              // Center spacer for the home button
-              const SizedBox(width: 48),
-
-              // Right side items
-              _buildNavItem(icon: Icons.checkroom, index: 3),
-              _buildNavItem(icon: Icons.person, index: 4),
-            ],
+                // Right side items
+                _buildNavItem(
+                  icon: Icons.recommend,
+                  index: 3,
+                  label: 'For You',
+                ),
+                _buildNavItem(icon: Icons.person, index: 4, label: 'Profile'),
+              ],
+            ),
           ),
 
-          // Centered home button\
-          Center(
-            child: Transform.translate(
-              offset: const Offset(0, 0), // Move up slightly
+          // Centered home button
+          Positioned(
+            left: 0,
+            right: 0,
+            top: -20, // Adjust this to position the FAB properly
+            child: Center(
               child: FloatingActionButton(
                 mini: true,
-                elevation: 0,
-                shape: CircleBorder(),
+                elevation: 4,
+                shape: const CircleBorder(),
                 backgroundColor: widget.selectedColor,
                 onPressed: () => widget.onTap(2),
                 child: const Icon(Icons.home, color: Colors.white),
@@ -85,7 +97,11 @@ class _CustomFloatingNavBarState extends State<CustomFloatingNavBar> {
     );
   }
 
-  Widget _buildNavItem({required IconData icon, required int index}) {
+  Widget _buildNavItem({
+    required IconData icon,
+    required int index,
+    required String label,
+  }) {
     final isSelected = widget.currentIndex == index;
     return Material(
       color: Colors.transparent,
@@ -93,7 +109,8 @@ class _CustomFloatingNavBarState extends State<CustomFloatingNavBar> {
         onTap: () => widget.onTap(index),
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          width: 60, // Fixed width to prevent overflow
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -103,6 +120,14 @@ class _CustomFloatingNavBarState extends State<CustomFloatingNavBar> {
                 color: isSelected ? widget.selectedColor : widget.defaultColor,
               ),
               const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  color:
+                      isSelected ? widget.selectedColor : widget.defaultColor,
+                ),
+              ),
             ],
           ),
         ),

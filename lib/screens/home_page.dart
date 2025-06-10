@@ -1,9 +1,5 @@
-import 'package:fashion_fusion/screens/page_wrapper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../constants/colors.dart';
 import 'product_detail.dart';
@@ -27,7 +23,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<List<dynamic>> _loadProducts() async {
-    final String response = await rootBundle.loadString('assets/data/data.json');
+    final String response = await rootBundle.loadString('data/data.json');
     return json.decode(response);
   }
 
@@ -55,6 +51,7 @@ class _HomePageState extends State<HomePage> {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
+                  // ignore: deprecated_member_use
                   color: Colors.black.withOpacity(0.35),
                 ),
                 child: const Align(
@@ -99,6 +96,7 @@ class _HomePageState extends State<HomePage> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
+                        // ignore: deprecated_member_use  
                         color: AppColors.primary.withOpacity(0.18),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
@@ -239,6 +237,7 @@ class _FeaturedProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.09),
               blurRadius: 8,
               offset: const Offset(0, 4),
@@ -319,6 +318,7 @@ class _ProductGridCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.09),
               blurRadius: 8,
               offset: const Offset(0, 4),
