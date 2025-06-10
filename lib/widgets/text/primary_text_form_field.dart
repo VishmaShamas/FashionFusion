@@ -13,22 +13,23 @@ class PrimaryTextFormField extends StatelessWidget {
       errorBorder,
       focusedErrorBorder;
   final List<TextInputFormatter>? inputFormatters;
-  Widget? prefixIcon;
-  Function(PointerDownEvent)? onTapOutside;
+  final Widget? prefixIcon;
+  final Function(PointerDownEvent)? onTapOutside;
   final Function(String)? onChanged;
   final double height, width;
-  TextEditingController controller;
+  final TextEditingController controller;
   final TextInputType? keyboardType;
+  final bool obscureText;
 
-  PrimaryTextFormField({
+  const PrimaryTextFormField({
     super.key,
     required this.hintText,
     this.border,
     this.enableBorder,
     this.focusedBorder,
     this.errorBorder,
-    this.keyboardType,
     this.focusedErrorBorder,
+    this.keyboardType,
     required this.controller,
     required this.width,
     required this.height,
@@ -40,6 +41,7 @@ class PrimaryTextFormField extends StatelessWidget {
     this.inputFormatters,
     this.prefixIcon,
     this.prefixIconColor,
+    this.obscureText = false, // ✅ properly assignable default
   });
 
   @override
@@ -48,11 +50,12 @@ class PrimaryTextFormField extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: AppColors.lightAccentColor,
-        borderRadius: BorderRadius.circular(borderRadius!),
+        color: fillColor ?? AppColors.lightAccentColor,
+        borderRadius: BorderRadius.circular(borderRadius ?? 8),
       ),
       child: TextFormField(
         controller: controller,
+        obscureText: obscureText, // ✅ respects constructor argument
         keyboardType: keyboardType,
         style: TextStyle(
           fontFamily: 'Inter',

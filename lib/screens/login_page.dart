@@ -33,11 +33,21 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passController = TextEditingController();
 
   void login(BuildContext context) async {
+    if (emailController.text.isEmpty || passController.text.isEmpty) {
+      setState(() {
+        errorMsg = "Email and password cannot be empty.";
+      });
+      return;
+    }
+
     try {
       await authService.value.signIn(
         email: emailController.text,
         password: passController.text,
       );
+      setState(() {
+        errorMsg = "";
+      });
       Navigator.push(
         // ignore: use_build_context_synchronously
         context,
@@ -67,9 +77,9 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (context) => PageWrapper()),
       );
     } on FirebaseAuthException catch (e) {
-      if (kDebugMode) {
-        print(e.message);
-      }
+      setState(() {
+        errorMsg = e.message ?? 'Something went wrong during sign in.';
+      });
     }
   }
 
@@ -107,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
       });
     } on FirebaseAuthException catch (e) {
       setState(() {
-        errorMsg = e.message;
+        errorMsg = e.message ?? 'Something went wrong during sign in.';
       });
     }
   }
@@ -187,6 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: passController,
                           width: 326,
                           height: 48,
+                          obscureText: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -205,6 +216,34 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: AppColors.primary,
                         ),
                         const SizedBox(height: 16),
+                        if (errorMsg != null && errorMsg!.isNotEmpty)
+  Container(
+    width: 326,
+    padding: const EdgeInsets.all(12),
+    margin: const EdgeInsets.only(top: 8),
+    decoration: BoxDecoration(
+      color: Colors.red.shade100,
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: Colors.red),
+    ),
+    child: Row(
+      children: [
+        const Icon(Icons.error, color: Colors.red),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            errorMsg!,
+            style: const TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+
                         //  forgot pass
                         PrimaryTextButton(
                           onPressed: () {

@@ -1,3 +1,4 @@
+import 'package:fashion_fusion/constants/colors.dart';
 import 'package:flutter/material.dart';
 
 class CustomRichText extends StatelessWidget {
@@ -23,6 +24,7 @@ class CustomRichText extends StatelessWidget {
             fontSize: 14,
             fontWeight: FontWeight.w400,
             fontFamily: 'Inter',
+            color: AppColors.white,
           ),
           children: <TextSpan>[
             TextSpan(text: subtitle, style: subtitleTextStyle),
