@@ -1,8 +1,8 @@
 // ignore: file_names
 class AppAssets {
-  static String onboardingFirst = 'assets/onboarding/first.png';
-  static String onboardingSecond = 'assets/onboarding/second.png';
-  static String onboardingThird = 'assets/onboarding/third.png';
+  static String onboarding = 'assets/onboarding/onboard.jpg';
+  // static String onboardingSecond = 'assets/onboarding/second.png';
+  // static String onboardingThird = 'assets/onboarding/bg.jpg';
   static String authBackground = 'assets/auth/auth.jpg';
 
   // static String authBackground = 'assets/auth/authBg.webp';

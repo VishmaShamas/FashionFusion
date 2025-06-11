@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:fashion_fusion/constants/colors.dart';
 import 'package:fashion_fusion/constants/images.dart';
-import 'package:fashion_fusion/screens/forgot_pass_page.dart';
+import 'package:fashion_fusion/screens/auth/forgot_pass_page.dart';
 import 'package:fashion_fusion/screens/page_wrapper.dart';
-import 'package:fashion_fusion/screens/signup_page.dart';
+import 'package:fashion_fusion/screens/auth/signup_page.dart';
 import 'package:fashion_fusion/services/auth_service.dart';
 import 'package:fashion_fusion/widgets/button/primary_button.dart';
 import 'package:fashion_fusion/widgets/button/secondary_button.dart';
@@ -13,12 +13,11 @@ import 'package:fashion_fusion/widgets/text/custom_rich_text.dart';
 import 'package:fashion_fusion/widgets/text/primary_text_form_field.dart';
 import 'package:fashion_fusion/widgets/ui/divider_row.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
-import '../widgets/button/primary_text_button.dart';
+import '../../widgets/button/primary_text_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -140,10 +139,10 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(
-                  top: 235,
+                  top: 180,
                   right: 200,
                   bottom: 15,
-                  left: 32,
+                  left: 0,
                 ),
                 child: Text(
                   'Login',
@@ -217,33 +216,33 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 16),
                         if (errorMsg != null && errorMsg!.isNotEmpty)
-  Container(
-    width: 326,
-    padding: const EdgeInsets.all(12),
-    margin: const EdgeInsets.only(top: 8),
-    decoration: BoxDecoration(
-      color: Colors.red.shade100,
-      borderRadius: BorderRadius.circular(8),
-      border: Border.all(color: Colors.red),
-    ),
-    child: Row(
-      children: [
-        const Icon(Icons.error, color: Colors.red),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            errorMsg!,
-            style: const TextStyle(
-              color: Colors.red,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
-        ),
-      ],
-    ),
-  ),
-
+                          Container(
+                            width: 326,
+                            padding: const EdgeInsets.all(12),
+                            margin: const EdgeInsets.only(top: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade100,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.red),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.error, color: Colors.red),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    errorMsg!,
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8,),
                         //  forgot pass
                         PrimaryTextButton(
                           onPressed: () {

@@ -18,7 +18,7 @@ class AuthService {
 
   Future<UserCredential> createAccount({
     required String email,
-    required String password,
+    required String password, required String name, required String image, required int bodyTypeIndex, required List wardrobe, required List likedProds,
   }) async {
     return await auth.createUserWithEmailAndPassword(email: email, password: password);
   }

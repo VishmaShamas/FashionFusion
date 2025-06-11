@@ -1,7 +1,7 @@
 import 'package:fashion_fusion/constants/colors.dart';
 import 'package:fashion_fusion/screens/liked_products.dart';
 import 'package:fashion_fusion/screens/product_page.dart';
-import 'package:fashion_fusion/screens/profile_page.dart';
+import 'package:fashion_fusion/screens/auth/profile_page.dart';
 import 'package:fashion_fusion/screens/home_page.dart';
 import 'package:fashion_fusion/screens/wardrobe_page.dart';
 import 'package:flutter/material.dart';

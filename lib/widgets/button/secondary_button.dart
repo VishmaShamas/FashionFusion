@@ -77,36 +77,26 @@ class _SecondaryButtonState extends State<SecondaryButton>
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // SizedBox(width: 15.w),
-                Padding(
-                  padding: const EdgeInsets.only(left: 10.0),
-                  child: SvgPicture.asset(widget.icons, width: 20, height: 20),
-                ),
-                const Spacer(),
+                
                 Center(
-                  child: Text(
-                    widget.text,
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                      color: widget.textColor,
-                      fontSize: widget.fontSize,
+                  child: Row(
+                    children: [
+                      SvgPicture.asset(widget.icons, width: 20, height: 20),
+                      const SizedBox(width: 10,),
+                      Text(
+                        widget.text,
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          color: widget.textColor,
+                          fontSize: widget.fontSize,
                       fontWeight: FontWeight.w700,
                       fontFamily: 'Inter',
                     ),
-                  ),
+                  ),])
                 ),
-                const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.only(right: 10.0),
-                  child: SvgPicture.asset(
-                    widget.icons,
-                    // ignore: deprecated_member_use
-                    color: Colors.transparent,
-                    width: 20,
-                    height: 20,
-                  ),
-                ),
+                
               ],
             ),
           ),

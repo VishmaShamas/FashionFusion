@@ -14,6 +14,7 @@ class PrimaryTextFormField extends StatelessWidget {
       focusedErrorBorder;
   final List<TextInputFormatter>? inputFormatters;
   final Widget? prefixIcon;
+  final Widget? suffixIcon;
   final Function(PointerDownEvent)? onTapOutside;
   final Function(String)? onChanged;
   final double height, width;
@@ -40,6 +41,7 @@ class PrimaryTextFormField extends StatelessWidget {
     this.borderRadius = 8,
     this.inputFormatters,
     this.prefixIcon,
+    this.suffixIcon,
     this.prefixIconColor,
     this.obscureText = false, // ✅ properly assignable default
   });
@@ -79,6 +81,7 @@ class PrimaryTextFormField extends StatelessWidget {
           ),
           prefixIcon: prefixIcon,
           prefixIconColor: prefixIconColor,
+          suffixIcon: suffixIcon,
           border: border,
           enabledBorder: enableBorder,
           focusedBorder: focusedBorder,

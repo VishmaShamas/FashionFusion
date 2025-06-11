@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:fashion_fusion/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fashion_fusion/screens/login_page.dart';
+import 'package:fashion_fusion/screens/auth/login_page.dart';
 import 'package:fashion_fusion/widgets/ui/loader.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -13,6 +17,20 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  User? user;
+  final ImagePicker _picker = ImagePicker();
+  File? _selectedImage;
+
+  @override
+  void initState() {
+    super.initState();
+    user = FirebaseAuth.instance.currentUser;
+  }
+
+  Future<User?> _getCurrentUser() async {
+    return FirebaseAuth.instance.currentUser;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,11 +42,11 @@ class _ProfilePageState extends State<ProfilePage> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CustomLoadingAnimation());
             }
-            final user = snapshot.data;
+            user = snapshot.data;
             if (user == null) {
               return _buildNotSignedIn();
             }
-            return _buildProfileContent(user);
+            return _buildProfileContent(user!);
           },
         ),
       ),
@@ -40,49 +58,27 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // ignore: deprecated_member_use
           Icon(Icons.account_circle, size: 100, color: Colors.white.withOpacity(0.7)),
           const SizedBox(height: 24),
-          Text(
-            'Welcome to Fashion Fusion',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          const Text('Welcome to Fashion Fusion',
+              style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          Text(
-            'Sign in to access your profile and wardrobe',
-            style: TextStyle(
-              // ignore: deprecated_member_use
-              color: Colors.white.withOpacity(0.7),
-              fontSize: 16,
-            ),
-          ),
+          Text('Sign in to access your profile and wardrobe',
+              style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16)),
           const SizedBox(height: 32),
           ElevatedButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
               elevation: 4,
-              // ignore: deprecated_member_use
               shadowColor: AppColors.primary.withOpacity(0.3),
             ),
-            child: const Text(
-              'Sign In',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
+            child: const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ).animate().fadeIn().scale(),
         ],
       ),
@@ -100,11 +96,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    // ignore: deprecated_member_use
-                    AppColors.primary.withOpacity(0.8),
-                    AppColors.darkScaffoldColor,
-                  ],
+                  colors: [AppColors.primary.withOpacity(0.8), AppColors.darkScaffoldColor],
                 ),
               ),
               child: Center(
@@ -112,18 +104,18 @@ class _ProfilePageState extends State<ProfilePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(height: 60),
-                    Hero(
-                      tag: 'profile-avatar',
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundImage: user.photoURL != null
-                            ? NetworkImage(user.photoURL!)
-                            : null,
-                        backgroundColor: AppColors.samiDarkColor,
-                        child: user.photoURL == null
-                            ? const Icon(Icons.person,
-                                size: 48, color: Colors.white70)
-                            : null,
+                    GestureDetector(
+                      onTap: _editProfile,
+                      child: Hero(
+                        tag: 'profile-avatar',
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundImage: user.photoURL != null ? NetworkImage(user.photoURL!) : null,
+                          backgroundColor: AppColors.samiDarkColor,
+                          child: user.photoURL == null
+                              ? const Icon(Icons.person, size: 48, color: Colors.white70)
+                              : null,
+                        ),
                       ),
                     ),
                   ],
@@ -137,23 +129,11 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Column(
               children: [
-                Text(
-                  user.displayName ?? 'No Name',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Text(user.displayName ?? 'No Name',
+                    style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                Text(
-                  user.email ?? '',
-                  style: TextStyle(
-                    // ignore: deprecated_member_use
-                    color: Colors.white.withOpacity(0.7),
-                    fontSize: 16,
-                  ),
-                ),
+                Text(user.email ?? '',
+                    style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16)),
                 const SizedBox(height: 24),
                 _buildStatsRow(),
                 const SizedBox(height: 32),
@@ -185,8 +165,6 @@ class _ProfilePageState extends State<ProfilePage> {
       children: [
         _buildStatItem("124", "Likes"),
         _buildStatItem("42", "Outfits"),
-        _buildStatItem("18", "Followers"),
-        _buildStatItem("7", "Following"),
       ],
     ).animate().fadeIn().slideY(begin: 0.2, end: 0);
   }
@@ -194,23 +172,10 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildStatItem(String value, String label) {
     return Column(
       children: [
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            // ignore: deprecated_member_use
-            color: Colors.white.withOpacity(0.7),
-            fontSize: 14,
-          ),
-        ),
+        Text(label,
+            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14)),
       ],
     );
   }
@@ -225,17 +190,7 @@ class _ProfilePageState extends State<ProfilePage> {
           icon: Icons.edit,
           label: "Edit Profile",
           color: AppColors.primary,
-          onPressed: () {
-            // TODO: Implement edit profile
-          },
-        ),
-        _buildActionButton(
-          icon: Icons.settings,
-          label: "Settings",
-          color: AppColors.samiDarkColor,
-          onPressed: () {
-            // TODO: Implement settings
-          },
+          onPressed: _editProfile,
         ),
         _buildActionButton(
           icon: Icons.logout,
@@ -259,11 +214,8 @@ class _ProfilePageState extends State<ProfilePage> {
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         elevation: 2,
-        // ignore: deprecated_member_use
         shadowColor: color.withOpacity(0.3),
       ),
       onPressed: onPressed,
@@ -273,33 +225,17 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildSectionTitle(String title) {
     return Row(
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        Text(title, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
         const Spacer(),
         TextButton(
-          onPressed: () {
-            // TODO: Implement see all
-          },
-          child: Text(
-            "See all",
-            style: TextStyle(
-              color: AppColors.primary,
-              fontSize: 14,
-            ),
-          ),
+          onPressed: () {},
+          child: Text("See all", style: TextStyle(color: AppColors.primary, fontSize: 14)),
         ),
       ],
     );
   }
 
   Widget _buildStylePreferences() {
-    // This would be replaced with actual style preference data
     return Wrap(
       spacing: 12,
       runSpacing: 12,
@@ -317,18 +253,13 @@ class _ProfilePageState extends State<ProfilePage> {
     return Chip(
       avatar: Icon(icon, size: 18, color: Colors.white),
       label: Text(label, style: const TextStyle(color: Colors.white)),
-      // ignore: deprecated_member_use
       backgroundColor: AppColors.primary.withOpacity(0.2),
-      // ignore: deprecated_member_use
       side: BorderSide(color: AppColors.primary.withOpacity(0.5)),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     );
   }
 
   Widget _buildLikedItemsGrid() {
-    // Replace with actual liked items data
     return SizedBox(
       height: 180,
       child: ListView.builder(
@@ -342,8 +273,7 @@ class _ProfilePageState extends State<ProfilePage> {
               borderRadius: BorderRadius.circular(16),
               color: AppColors.samiDarkColor,
               image: DecorationImage(
-                image: NetworkImage(
-                    "https://source.unsplash.com/random/300x300/?fashion,clothing&$index"),
+                image: NetworkImage("https://source.unsplash.com/random/300x300/?fashion,clothing&$index"),
                 fit: BoxFit.cover,
               ),
             ),
@@ -353,11 +283,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
-                  colors: [
-                    // ignore: deprecated_member_use
-                    Colors.black.withOpacity(0.7),
-                    Colors.transparent,
-                  ],
+                  colors: [Colors.black.withOpacity(0.7), Colors.transparent],
                 ),
               ),
               child: const Align(
@@ -375,7 +301,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildWardrobeGrid() {
-    // Replace with actual wardrobe data
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -392,8 +317,7 @@ class _ProfilePageState extends State<ProfilePage> {
             borderRadius: BorderRadius.circular(16),
             color: AppColors.samiDarkColor,
             image: DecorationImage(
-              image: NetworkImage(
-                  "https://source.unsplash.com/random/300x300/?clothing,outfit&$index"),
+              image: NetworkImage("https://source.unsplash.com/random/300x300/?clothing,outfit&$index"),
               fit: BoxFit.cover,
             ),
           ),
@@ -403,24 +327,15 @@ class _ProfilePageState extends State<ProfilePage> {
               gradient: LinearGradient(
                 begin: Alignment.bottomCenter,
                 end: Alignment.topCenter,
-                colors: [
-                  // ignore: deprecated_member_use
-                  Colors.black.withOpacity(0.7),
-                  Colors.transparent,
-                ],
+                colors: [Colors.black.withOpacity(0.7), Colors.transparent],
               ),
             ),
             child: Align(
               alignment: Alignment.bottomLeft,
               child: Padding(
-                padding: EdgeInsets.all(12),
-                child: Text(
-                  "Outfit #${index + 1}",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                padding: const EdgeInsets.all(12),
+                child: Text("Outfit #${index + 1}",
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
           ),
@@ -429,8 +344,108 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Future<User?> _getCurrentUser() async {
-    return FirebaseAuth.instance.currentUser;
+  Future<void> _editProfile() async {
+  final nameController = TextEditingController(text: user?.displayName ?? '');
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: AppColors.samiDarkColor,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (context) => Padding(
+      padding: EdgeInsets.only(
+        top: 24,
+        left: 24,
+        right: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text("Edit Profile", style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: _pickImage,
+            child: CircleAvatar(
+              radius: 40,
+              backgroundImage: _selectedImage != null
+                  ? FileImage(_selectedImage!)
+                  : (user?.photoURL != null ? NetworkImage(user!.photoURL!) : null) as ImageProvider?,
+              child: _selectedImage == null && user?.photoURL == null
+                  ? const Icon(Icons.camera_alt, color: Colors.white70)
+                  : null,
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: nameController,
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              labelText: 'Display Name',
+              labelStyle: TextStyle(color: Colors.white70),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white30),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () async {
+              final newName = nameController.text.trim();
+              String? imageUrl;
+
+              // Upload profile image if selected
+              if (_selectedImage != null) {
+                final ref = FirebaseStorage.instance
+                    .ref()
+                    .child('profile_pics/${user!.uid}.jpg');
+                await ref.putFile(_selectedImage!);
+                imageUrl = await ref.getDownloadURL();
+              }
+
+              // Update Firebase current user
+              await user!.updateDisplayName(newName);
+              if (imageUrl != null) {
+                await user!.updatePhotoURL(imageUrl);
+              }
+
+              // Refresh user
+              await user!.reload();
+              user = FirebaseAuth.instance.currentUser;
+
+              setState(() {
+                _selectedImage = null; // Clear selected image after saving
+              });
+
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: const Text('Save', style: TextStyle(fontSize: 16)),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
   }
 
   Future<void> _confirmSignOut() async {
@@ -442,90 +457,16 @@ class _ProfilePageState extends State<ProfilePage> {
         content: const Text('Are you sure you want to sign out?',
             style: TextStyle(color: Colors.white70)),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Sign Out', style: TextStyle(color: Colors.red)),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sign Out', style: TextStyle(color: Colors.red))),
         ],
       ),
     );
     if (confirmed == true) {
-      await _signOut();
-    }
-  }
-
-  Future<void> _confirmDelete() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.samiDarkColor,
-        title: const Text('Delete Account', style: TextStyle(color: Colors.white)),
-        content: const Text('This action is irreversible. All your data will be lost.',
-            style: TextStyle(color: Colors.white70)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      await _deleteAccount();
-    }
-  }
-
-  Future<void> _signOut() async {
-    try {
       await FirebaseAuth.instance.signOut();
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const LoginScreen()));
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
       }
-    } catch (e) {
-      _showError('Error signing out: $e');
-    }
-  }
-
-  Future<void> _deleteAccount() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await user.delete();
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const LoginScreen()));
-        }
-      }
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'requires-recent-login') {
-        _showError('Please re-authenticate to delete your account.');
-      } else {
-        _showError('Error deleting account: ${e.message}');
-      }
-    }
-  }
-
-  void _showError(String message) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
     }
   }
 }

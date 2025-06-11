@@ -9,15 +9,15 @@ class Onboarding {
 
 List<Onboarding> onboardingList = [
   Onboarding(
-    bgImage: AppAssets.onboardingFirst,
-    title: "Onboarding 1",
-    info: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    bgImage: AppAssets.onboarding,
+    title: "Welcome to Fashion Fusion",
+    info: "Smarter Outfits. Sleeker Mornings",
   ),
-  Onboarding(
-    bgImage: AppAssets.onboardingSecond,
-    title: "Onboarding 2",
-    info: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-  ),
+  // Onboarding(
+  //   bgImage: AppAssets.onboardingSecond,
+  //   title: "Onboarding 2",
+  //   info: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  // ),
   // Onboarding(
   //   bgImage: AppAssets.onboardingThird,
   //   title: "Onboarding 3",

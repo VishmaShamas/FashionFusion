@@ -1,5 +1,5 @@
-import 'package:fashion_fusion/screens/get_started.dart';
-import 'package:fashion_fusion/screens/login_page.dart';
+import 'package:fashion_fusion/screens/auth/get_started.dart';
+import 'package:fashion_fusion/screens/auth/login_page.dart';
 import 'package:fashion_fusion/screens/page_wrapper.dart';
 import 'package:fashion_fusion/widgets/ui/loader.dart';
 import 'package:flutter/material.dart';
@@ -47,6 +47,7 @@ class _AuthGateState extends State<AuthGate> {
   Future<void> _checkFirstLaunch() async {
     final prefs = await SharedPreferences.getInstance();
     final isFirst = prefs.getBool('isFirstLaunch') ?? true;
+    // final isFirst = true;
 
     if (isFirst) {
       await prefs.setBool('isFirstLaunch', false);
