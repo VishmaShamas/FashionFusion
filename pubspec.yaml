@@ -58,7 +58,7 @@ dependencies:
   sign_in_with_apple: ^7.0.1
   uuid: ^4.5.1
   video_player: ^2.10.0
-  
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
 
@@ -113,3 +113,6 @@ flutter_native_splash:
   image: assets/logo/slogo.png # your logo path
   android: true
   ios: true
+# 1decab43dfcb819bafeb1b2a3e580283484d3ee4
+
+# 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
