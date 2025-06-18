@@ -139,6 +139,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 32),
                 _buildActionButtons(),
                 const SizedBox(height: 40),
+                _buildTrendingStyles(),
+                const SizedBox(height: 32),
                 _buildSectionTitle("Your Style Preferences"),
                 const SizedBox(height: 16),
                 _buildStylePreferences(),
@@ -146,16 +148,160 @@ class _ProfilePageState extends State<ProfilePage> {
                 _buildSectionTitle("Liked Items"),
                 const SizedBox(height: 16),
                 _buildLikedItemsGrid(),
-                const SizedBox(height: 32),
-                _buildSectionTitle("Your Wardrobe"),
-                const SizedBox(height: 16),
-                _buildWardrobeGrid(),
                 const SizedBox(height: 40),
               ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTrendingStyles() {
+    final List<Map<String, dynamic>> trendingStyles = [
+      {
+        'title': 'Streetwear Essentials',
+        'image': 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+        'likes': '1.2k',
+      },
+      {
+        'title': 'Minimalist Business',
+        'image': 'https://images.unsplash.com/photo-1539533018447-63fcce2678e4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+        'likes': '856',
+      },
+      {
+        'title': 'Athleisure Vibes',
+        'image': 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+        'likes': '1.5k',
+      },
+      {
+        'title': 'Urban Utility',
+        'image': 'https://images.unsplash.com/photo-1551232864-3f0890e580d9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+        'likes': '932',
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Preferences',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextButton(
+                onPressed: () {},
+                child: Text(
+                  'See All',
+                  style: TextStyle(color: AppColors.primary),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 220,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 0),
+            itemCount: trendingStyles.length,
+            itemBuilder: (context, index) {
+              final style = trendingStyles[index];
+              return _buildTrendingStyleCard(style);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTrendingStyleCard(Map<String, dynamic> style) {
+    return Container(
+      width: 160,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: AppColors.samiDarkColor,
+                image: DecorationImage(
+                  image: NetworkImage(style['image']),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.7),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+                child: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.favorite_border, color: Colors.white, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          style['likes'],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              style['title'],
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              'Trending this week',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -300,144 +446,97 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildWardrobeGrid() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 0.8,
+  Future<void> _editProfile() async {
+    final nameController = TextEditingController(text: user?.displayName ?? '');
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.samiDarkColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      itemCount: 4,
-      itemBuilder: (context, index) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: AppColors.samiDarkColor,
-            image: DecorationImage(
-              image: NetworkImage("https://source.unsplash.com/random/300x300/?clothing,outfit&$index"),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          top: 24,
+          left: 24,
+          right: 24,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("Edit Profile", style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: _pickImage,
+              child: CircleAvatar(
+                radius: 40,
+                backgroundImage: _selectedImage != null
+                    ? FileImage(_selectedImage!)
+                    : (user?.photoURL != null ? NetworkImage(user!.photoURL!) : null) as ImageProvider?,
+                child: _selectedImage == null && user?.photoURL == null
+                    ? const Icon(Icons.camera_alt, color: Colors.white70)
+                    : null,
               ),
             ),
-            child: Align(
-              alignment: Alignment.bottomLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Text("Outfit #${index + 1}",
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: nameController,
+              style: const TextStyle(color: Colors.white),
+              decoration: const InputDecoration(
+                labelText: 'Display Name',
+                labelStyle: TextStyle(color: Colors.white70),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white30),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
               ),
             ),
-          ),
-        );
-      },
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () async {
+                final newName = nameController.text.trim();
+                String? imageUrl;
+
+                if (_selectedImage != null) {
+                  final ref = FirebaseStorage.instance
+                      .ref()
+                      .child('profile_pics/${user!.uid}.jpg');
+                  await ref.putFile(_selectedImage!);
+                  imageUrl = await ref.getDownloadURL();
+                }
+
+                await user!.updateDisplayName(newName);
+                if (imageUrl != null) {
+                  await user!.updatePhotoURL(imageUrl);
+                }
+
+                await user!.reload();
+                user = FirebaseAuth.instance.currentUser;
+
+                setState(() {
+                  _selectedImage = null;
+                });
+
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              child: const Text('Save', style: TextStyle(fontSize: 16)),
+            ),
+          ],
+        ),
+      ),
     );
   }
-
-  Future<void> _editProfile() async {
-  final nameController = TextEditingController(text: user?.displayName ?? '');
-  await showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: AppColors.samiDarkColor,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    builder: (context) => Padding(
-      padding: EdgeInsets.only(
-        top: 24,
-        left: 24,
-        right: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text("Edit Profile", style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          GestureDetector(
-            onTap: _pickImage,
-            child: CircleAvatar(
-              radius: 40,
-              backgroundImage: _selectedImage != null
-                  ? FileImage(_selectedImage!)
-                  : (user?.photoURL != null ? NetworkImage(user!.photoURL!) : null) as ImageProvider?,
-              child: _selectedImage == null && user?.photoURL == null
-                  ? const Icon(Icons.camera_alt, color: Colors.white70)
-                  : null,
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: nameController,
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
-              labelText: 'Display Name',
-              labelStyle: TextStyle(color: Colors.white70),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white30),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () async {
-              final newName = nameController.text.trim();
-              String? imageUrl;
-
-              // Upload profile image if selected
-              if (_selectedImage != null) {
-                final ref = FirebaseStorage.instance
-                    .ref()
-                    .child('profile_pics/${user!.uid}.jpg');
-                await ref.putFile(_selectedImage!);
-                imageUrl = await ref.getDownloadURL();
-              }
-
-              // Update Firebase current user
-              await user!.updateDisplayName(newName);
-              if (imageUrl != null) {
-                await user!.updatePhotoURL(imageUrl);
-              }
-
-              // Refresh user
-              await user!.reload();
-              user = FirebaseAuth.instance.currentUser;
-
-              setState(() {
-                _selectedImage = null; // Clear selected image after saving
-              });
-
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            child: const Text('Save', style: TextStyle(fontSize: 16)),
-          ),
-        ],
-      ),
-    ),
-  );
-}
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 70);

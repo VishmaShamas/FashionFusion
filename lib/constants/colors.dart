@@ -18,4 +18,7 @@ class AppColors {
     colors: [const Color(0xFF110C1D).withValues(alpha: 0.0), const Color(0xFF110C1D)],
   );
   static const pinkColor = Color(0XFFfb6e63);
+  static Color cardBackgroundColor = Color(0xFF2A2D3E);
+  static Color textSecondaryColor = Color(0xFFA1A4B2);
+  static Color dividerColor = Color(0xFF3A3E52);
 }

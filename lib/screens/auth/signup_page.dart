@@ -148,17 +148,22 @@ Widget build(BuildContext context) {
     child: Scaffold(
       backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 50),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 80),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          
           children: [
-            Text(
-              'Sign up',
-              style: TextStyle(
-                fontSize: 32,
-                color: AppColors.lightAccentColor,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Inter',
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 50.0),
+              child: Text(
+                'Sign up',
+                style: TextStyle(
+                  fontSize: 32,
+                  color: AppColors.lightAccentColor,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Inter',
+                  
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -172,24 +177,24 @@ Widget build(BuildContext context) {
                 boxShadow: [
                   BoxShadow(
                     // ignore: deprecated_member_use
-                    color: AppColors.samiDarkColor.withOpacity(0.5),
+                    color: AppColors.samiDarkColor.withOpacity(0),
                     blurRadius: 10,
                   )
                 ],
               ),
               child: Column(
                 children: [
-                  CustomRichText(
-                    onTab: () {},
-                    title: 'Looks like you don’t have an account.',
-                    subtitle: 'Let’s create a new account for you.',
-                    subtitleTextStyle: TextStyle(
-                      color: AppColors.lightAccentColor,
-                      fontSize: 14,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
+                  // CustomRichText(
+                  //   onTab: () {},
+                  //   title: 'Looks like you don’t have an account.',
+                  //   subtitle: 'Let’s create a new account for you.',
+                  //   subtitleTextStyle: TextStyle(
+                  //     color: AppColors.lightAccentColor,
+                  //     fontSize: 14,
+                  //     fontFamily: 'Inter',
+                  //     fontWeight: FontWeight.w400,
+                  //   ),
+                  // ),
                   const SizedBox(height: 20),
 
                   /// Input Fields
@@ -273,7 +278,7 @@ Widget build(BuildContext context) {
                   ),
                   const SizedBox(height: 16),
                   SizedBox(
-                    height: 230,
+                    height: 210,
                     child: PageView.builder(
                       itemCount: bodyTypes.length,
                       controller: PageController(

@@ -4,7 +4,6 @@ import 'package:fashion_fusion/widgets/button/primary_button.dart';
 import 'package:fashion_fusion/widgets/cards/custom_gradient_card.dart';
 import 'package:fashion_fusion/widgets/cards/onboarding_card.dart';
 import 'package:fashion_fusion/widgets/getStarted/onboarding.dart';
-import 'package:fashion_fusion/widgets/ui/custom_dots_indicator.dart';
 import 'package:flutter/material.dart';
 
 class GetStartedPage extends StatefulWidget {

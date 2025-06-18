@@ -31,10 +31,10 @@ class _ProductPageState extends State<ProductPage> {
     final String response = await rootBundle.loadString('data/data.json');
     final List<dynamic> data = json.decode(response);
     setState(() {
-      _products = data;
-      _filteredProducts = data;
-      _brands = {'All', ...data.map((p) => p['brand'] ?? '').where((b) => b.isNotEmpty)};
-      _categories = {'All', ...data.map((p) => p['category'] ?? '').where((c) => c.isNotEmpty)};
+      _products = data.take(50).toList(); // Show only first 50 products
+      _filteredProducts = _products;
+      _brands = {'All', ..._products.map((p) => p['brand'] ?? '').where((b) => b.isNotEmpty)};
+      _categories = {'All', ..._products.map((p) => p['category'] ?? '').where((c) => c.isNotEmpty)};
       _loading = false;
     });
   }
@@ -55,17 +55,17 @@ class _ProductPageState extends State<ProductPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.blackColor,
+      backgroundColor: AppColors.darkScaffoldColor,
       appBar: AppBar(
-        backgroundColor: AppColors.blackColor,
+        backgroundColor: AppColors.darkScaffoldColor,
         title: const Text('Shop Products', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 1,
+        elevation: 0,
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : Padding(
-              padding: const EdgeInsets.all(14.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
                   // Search Field
@@ -73,7 +73,7 @@ class _ProductPageState extends State<ProductPage> {
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: 'Search products...',
-                      hintStyle: const TextStyle(color: Colors.white38),
+                      hintStyle: const TextStyle(color: Colors.white54),
                       prefixIcon: const Icon(Icons.search, color: Colors.white54),
                       filled: true,
                       fillColor: AppColors.samiDarkColor,
@@ -81,13 +81,14 @@ class _ProductPageState extends State<ProductPage> {
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 2, horizontal: 16),
                     ),
                     onChanged: (value) {
                       _searchQuery = value;
                       _filterProducts();
                     },
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 16),
                   // Filters
                   Row(
                     children: [
@@ -116,14 +117,14 @@ class _ProductPageState extends State<ProductPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   // Product Count & Clear
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         '${_filteredProducts.length} products found',
-                        style: TextStyle(color: Colors.white70, fontSize: 13),
+                        style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
                       ),
                       if (_selectedBrand != 'All' || _selectedCategory != 'All' || _searchQuery.isNotEmpty)
                         TextButton(
@@ -141,24 +142,26 @@ class _ProductPageState extends State<ProductPage> {
                   // Product Grid
                   Expanded(
                     child: _filteredProducts.isEmpty
-                        ? const Center(
+                        ? Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.search_off, color: Colors.white38, size: 50),
-                                SizedBox(height: 8),
-                                Text('No products found', style: TextStyle(color: Colors.white54, fontSize: 15)),
-                                Text('Try changing filters', style: TextStyle(color: Colors.white38, fontSize: 12)),
+                                Icon(Icons.search_off, color: Colors.white.withOpacity(0.3), size: 50),
+                                const SizedBox(height: 12),
+                                Text('No products found', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 16)),
+                                const SizedBox(height: 4),
+                                Text('Try changing filters', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
                               ],
                             ),
                           )
                         : GridView.builder(
+                            padding: const EdgeInsets.only(bottom: 16),
                             itemCount: _filteredProducts.length,
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
-                              mainAxisSpacing: 14,
-                              crossAxisSpacing: 14,
-                              childAspectRatio: 0.68,
+                              mainAxisSpacing: 16,
+                              crossAxisSpacing: 16,
+                              childAspectRatio: 0.72,
                             ),
                             itemBuilder: (context, index) {
                               final product = _filteredProducts[index];
@@ -186,68 +189,124 @@ class _ProductPageState extends State<ProductPage> {
         labelStyle: const TextStyle(color: Colors.white60),
         filled: true,
         fillColor: AppColors.samiDarkColor,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
       style: const TextStyle(color: Colors.white),
       icon: const Icon(Icons.arrow_drop_down, color: Colors.white54),
-      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(color: Colors.white)))).toList(),
+      items: items.map((e) => DropdownMenuItem(
+        value: e,
+        child: Text(e, 
+          style: const TextStyle(color: Colors.white),
+          overflow: TextOverflow.ellipsis,
+        ),
+      )).toList(),
       onChanged: onChanged,
     );
   }
 
   Widget _buildProductCard(dynamic product) {
-    return Card(
-      color: AppColors.samiDarkColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      elevation: 4,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ProductDetailPage(product: product),
-          ),
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProductDetailPage(product: product),
+        ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.samiDarkColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-              child: Image.network(
-                product['image'] ?? '',
-                height: 150,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 40, color: Colors.white54),
+            // Image Container with fixed aspect ratio
+            AspectRatio(
+              aspectRatio: 1,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                child: Image.network(
+                  product['image'] ?? '',
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: Colors.black.withOpacity(0.1),
+                    child: const Center(
+                      child: Icon(Icons.broken_image, size: 40, color: Colors.white24),
+                    ),
+                  ),
+                ),
               ),
             ),
+            // Product Info
             Padding(
-              padding: const EdgeInsets.all(10.0),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    product['title'] ?? '',
+                    product['title'] ?? 'No Title',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                   const SizedBox(height: 4),
-                  Text(product['brand'] ?? '', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                  const SizedBox(height: 4),
-                  Text(product['category'] ?? '', style: TextStyle(color: Colors.white54, fontSize: 11)),
+                  Text(
+                    product['brand'] ?? 'No Brand',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 12,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 8),
                   if (product['discount_price'] != null)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Rs. ${product['price']}', style: const TextStyle(color: Colors.red, decoration: TextDecoration.lineThrough, fontSize: 12)),
-                        Text('Rs. ${product['discount_price']}', style: const TextStyle(color: AppColors.primary, fontSize: 15, fontWeight: FontWeight.bold)),
+                        Text(
+                          'Rs. ${product['price']}',
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            decoration: TextDecoration.lineThrough,
+                            fontSize: 12,
+                          ),
+                        ),
+                        Text(
+                          'Rs. ${product['discount_price']}',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     )
                   else
-                    Text('Rs. ${product['price']}', style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Rs. ${product['price']}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                 ],
               ),
             ),

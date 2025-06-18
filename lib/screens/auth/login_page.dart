@@ -169,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     boxShadow: [
                       BoxShadow(
                         // ignore: deprecated_member_use
-                        color: AppColors.samiDarkColor.withOpacity(0.5),
+                        color: AppColors.samiDarkColor.withOpacity(0),
                         blurRadius: 10,
                       ),
                     ],

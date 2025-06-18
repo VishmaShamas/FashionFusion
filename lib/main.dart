@@ -71,6 +71,7 @@ class _AuthGateState extends State<AuthGate> {
 
     if (isFirstLaunch) {
       return const GetStartedPage();
+      // return const PageWrapper();
     }
 
     // Not first launch: now check FirebaseAuth
