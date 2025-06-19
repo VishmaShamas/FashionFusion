@@ -94,6 +94,8 @@ flutter:
     - assets/cred/
     - assets/cred/wardrobe.json
     - assets/bodyType/
+    - assets/data/
+    - assets/data/data.json
   #   - images/a_dot_ham.jpeg
 
   # fonts:

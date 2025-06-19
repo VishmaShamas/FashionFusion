@@ -138,120 +138,84 @@ class _WardrobePageState extends State<WardrobePage> {
     );
   }
 
+Widget _buildWardrobeGridItem(Map<String, dynamic> item) {
+  return GestureDetector(
+  onTap: () => _showItemDetails(item),
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(12),
+    child: Image.network(
+      item['imageUrl'],
+      width: double.infinity,
+      height: 200,
+      fit: BoxFit.cover,
+    ),
+  ),);
+}
+
   Widget _buildWardrobeList() {
-    final filteredItems = _selectedCategory == 'All'
-        ? _wardrobeItems
-        : _wardrobeItems.where((item) => item['category'] == _selectedCategory).toList();
+  final filteredItems = _selectedCategory == 'All'
+      ? _wardrobeItems
+      : _wardrobeItems.where((item) => item['category'] == _selectedCategory).toList();
 
-    if (filteredItems.isEmpty) {
-      return SliverFillRemaining(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.photo_library_outlined,
-                size: 60,
-                // ignore: deprecated_member_use
-                color: Colors.white.withOpacity(0.3),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'No clothing items added',
-                style: TextStyle(
-                  // ignore: deprecated_member_use
-                  color: Colors.white.withOpacity(0.6),
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Tap the + button to add items',
-                style: TextStyle(
-                  // ignore: deprecated_member_use
-                  color: Colors.white.withOpacity(0.4),
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final item = filteredItems[index];
-          return _buildWardrobeItem(item);
-        },
-        childCount: filteredItems.length,
-      ),
-    );
-  }
-
-  Widget _buildWardrobeItem(Map<String, dynamic> item) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.samiDarkColor,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
+  if (filteredItems.isEmpty) {
+    return SliverFillRemaining(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                item['imageUrl'],
-                width: 100,
-                height: 100,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item['category'],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${item['color']} • ${item['pattern']}',
-                    style: TextStyle(
-                      // ignore: deprecated_member_use
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Added on ${item['uploadDate']}',
-                    style: TextStyle(
-                      // ignore: deprecated_member_use
-                      color: Colors.white.withOpacity(0.5),
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.more_vert, color: Colors.white70),
-              onPressed: () => _showItemDetails(item),
-            ),
+            Icon(Icons.photo_library_outlined, size: 60, color: Colors.white.withOpacity(0.3)),
+            const SizedBox(height: 16),
+            Text('No clothing items added',
+                style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 16)),
+            const SizedBox(height: 8),
+            Text('Tap the + button to add items',
+                style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
           ],
         ),
       ),
     );
   }
+
+  return SliverPadding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    sliver: SliverGrid(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final item = filteredItems[index];
+          return _buildWardrobeGridItem(item);
+        },
+        childCount: filteredItems.length,
+      ),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 0.8,
+      ),
+    ),
+  );
+}
+
+  Widget _buildWardrobeItem(Map<String, dynamic> item) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+    child: Container(
+      decoration: BoxDecoration(
+        color: AppColors.samiDarkColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.network(
+          item['imageUrl'],
+          width: double.infinity,
+          height: 200,
+          fit: BoxFit.cover,
+        ),
+      ),
+    ),
+  );
+}
 
   Future<void> _pickAndAnalyzeImage() async {
     try {

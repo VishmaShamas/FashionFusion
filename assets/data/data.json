@@ -19,6 +19,16 @@
     "brand": "The Cambridge Shop",
     "category": "Athleisure",
     "id": "p2"
+  },{
+    "title": "CROSS POCKET MELANGE PANT BROWN",
+    "url": "https://charcoal.com.pk/products/cross-pocket-melange-pant-brown",
+    "image": "https://charcoal.com.pk/cdn/shop/files/DSC02091_3ac84c39-d1d5-492d-9526-577ea709a075.jpg?v=1705494618&width=200",
+    "price": "5695",
+    "discount_price": "2847",
+    "description": "Fashioned from luxurious blend of premium cotton and stretch materials, these melange pants offer a refined take on the timeless Chino. The slim cut ensures a closer fit to the body, with a slender profile through the leg and a gracefully tapered hem. Intricately detailed with premium stitching, a sophisticated front button closure, and back flap pockets, these pants exude elevated style.",
+    "brand": "Charcoal",
+    "category": "Pants",
+    "id": "p1397"
   },
   {
     "title": "ATHLEISURE ZIPPER - NAVY BLUE",
@@ -30,6 +40,36 @@
     "brand": "The Cambridge Shop",
     "category": "Athleisure",
     "id": "p3"
+  },{
+    "title": "Prince Coat 79 (3 Piece) - The Great Masters (TGM)",
+    "url": "https://laam.pk/products/prince-coat-79-3-piece",
+    "image": "https://cdn.shopify.com/s/files/1/2337/7003/products/89433e82d703423f9e29d72b148acb51.jpg?v=1702990041&width=300",
+    "price": "31450",
+    "discount_price": "22015",
+    "description": "",
+    "brand": "Laam",
+    "category": "Prince Coat",
+    "id": "p5566"
+  },{
+    "title": "Formal Shirt",
+    "url": "https://uniworthshop.com/product/navy-plain-classic-fit-shirt-fs2172-3rf",
+    "image": "https://uniworthdress.com/uploads/product/FS2172-3RF..jpg",
+    "price": "9975",
+    "discount_price": null,
+    "description": "Uniworthâ€™s plain shirt is the ultimate choice for stylish men who donâ€™t want a full stop to their trend-following. A relaxed-fit collared shirt featuring long sleeves with buttoned cuffs. Our Regular fit is the roomiest choice in shirts, and offers maximum comfort, generously cutting across the waist, creating a seamless straight silhouette.  It doesn't get more classic. Crafted from a stretch cotton fabric. In a Regular fit.",
+    "brand": "Uniworth",
+    "category": "Shirts",
+    "id": "p12058"
+  },{
+    "title": "Prince Coat 86 (3 Piece) - The Great Masters (TGM)",
+    "url": "https://laam.pk/products/prince-coat-86-3-piece",
+    "image": "https://cdn.shopify.com/s/files/1/2337/7003/products/1c6e1dba73f2c61b548bf24485af9c1d.jpg?v=1702990274&width=300",
+    "price": "31450",
+    "discount_price": "22015",
+    "description": "",
+    "brand": "Laam",
+    "category": "Prince Coat",
+    "id": "p5567"
   },
   {
     "title": "ATHLEISURE ZIPPER - CHARCOAL",

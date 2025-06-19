@@ -1,3 +1,4 @@
+import 'package:fashion_fusion/widgets/ui/loader.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
@@ -28,17 +29,43 @@ class _ProductPageState extends State<ProductPage> {
   }
 
   Future<void> _loadProducts() async {
-    final String response = await rootBundle.loadString('data/data.json');
-    final List<dynamic> data = json.decode(response);
+  try {
+    final String response = await rootBundle.loadString('assets/data/data.json');
+    final List<dynamic> data = await json.decode(response) as List;
+    
+    if (data.isEmpty) {
+      debugPrint('JSON data is empty');
+      return;
+    }
+
     setState(() {
-      _products = data.take(50).toList(); // Show only first 50 products
+      _products = List<Map<String, dynamic>>.from(data);
       _filteredProducts = _products;
-      _brands = {'All', ..._products.map((p) => p['brand'] ?? '').where((b) => b.isNotEmpty)};
-      _categories = {'All', ..._products.map((p) => p['category'] ?? '').where((c) => c.isNotEmpty)};
+      _brands = {'All'};
+      _categories = {'All'};
+      
+      for (var product in _products) {
+        if (product['brand'] != null) {
+          _brands.add(product['brand'].toString());
+        }
+        if (product['category'] != null) {
+          _categories.add(product['category'].toString());
+        }
+      }
+      
+      _loading = false;
+    });
+    
+    debugPrint('Loaded ${_products.length} products');
+    debugPrint('Brands: $_brands');
+    debugPrint('Categories: $_categories');
+  } catch (e) {
+    debugPrint('Error loading products: $e');
+    setState(() {
       _loading = false;
     });
   }
-
+}
   void _filterProducts() {
     setState(() {
       _filteredProducts = _products.where((product) {
@@ -52,9 +79,36 @@ class _ProductPageState extends State<ProductPage> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+ @override
+Widget build(BuildContext context) {
+  if (_loading) {
+    return const Center(
+      child: CircularProgressIndicator(
+        color: AppColors.primary),
+    );
+  }
+
+  if (_products.isEmpty) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, 
+            color: Colors.white54, size: 50),
+          const SizedBox(height: 16),
+          const Text('No products available',
+            style: TextStyle(color: Colors.white)),
+          TextButton(
+            onPressed: _loadProducts,
+            child: const Text('Retry',
+              style: TextStyle(color: AppColors.primary)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  return Scaffold(
       backgroundColor: AppColors.darkScaffoldColor,
       appBar: AppBar(
         backgroundColor: AppColors.darkScaffoldColor,
@@ -63,7 +117,7 @@ class _ProductPageState extends State<ProductPage> {
         elevation: 0,
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const CustomLoadingAnimation()
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -161,7 +215,7 @@ class _ProductPageState extends State<ProductPage> {
                               crossAxisCount: 2,
                               mainAxisSpacing: 16,
                               crossAxisSpacing: 16,
-                              childAspectRatio: 0.72,
+                              childAspectRatio: 0.65,
                             ),
                             itemBuilder: (context, index) {
                               final product = _filteredProducts[index];
@@ -183,6 +237,7 @@ class _ProductPageState extends State<ProductPage> {
   }) {
     return DropdownButtonFormField<String>(
       value: value,
+      isExpanded: true,
       dropdownColor: AppColors.samiDarkColor,
       decoration: InputDecoration(
         labelText: label,
@@ -208,111 +263,142 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 
-  Widget _buildProductCard(dynamic product) {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ProductDetailPage(product: product),
-        ),
+ Widget _buildProductCard(dynamic product) {
+  // Ensure product is actually a Map
+  if (product is! Map<String, dynamic>) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.cardBackgroundColor,
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.samiDarkColor,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image Container with fixed aspect ratio
-            AspectRatio(
-              aspectRatio: 1,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: Image.network(
-                  product['image'] ?? '',
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: Colors.black.withOpacity(0.1),
-                    child: const Center(
-                      child: Icon(Icons.broken_image, size: 40, color: Colors.white24),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // Product Info
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product['title'] ?? 'No Title',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    product['brand'] ?? 'No Brand',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 12,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  if (product['discount_price'] != null)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Rs. ${product['price']}',
-                          style: const TextStyle(
-                            color: Colors.white54,
-                            decoration: TextDecoration.lineThrough,
-                            fontSize: 12,
-                          ),
-                        ),
-                        Text(
-                          'Rs. ${product['discount_price']}',
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    )
-                  else
-                    Text(
-                      'Rs. ${product['price']}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
+      child: const Center(
+        child: Text('Invalid product', 
+          style: TextStyle(color: Colors.white)),
       ),
     );
   }
+
+  return GestureDetector(
+    onTap: () => Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProductDetailPage(product: product),
+      ),
+    ),
+    child: Container(
+      decoration: BoxDecoration(
+        color: AppColors.cardBackgroundColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AspectRatio(
+            aspectRatio: 1,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16)),
+                color: Colors.black.withOpacity(0.1),
+              ),
+              child: product['image'] != null 
+                  ? Image.network(
+                      product['image'].toString(),
+                      fit: BoxFit.scaleDown,
+                      errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+                    )
+                  : _buildImagePlaceholder(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product['title']?.toString() ?? 'No Title',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  product['brand']?.toString() ?? 'No Brand',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 1),
+                _buildPriceWidget(product),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
+
+Widget _buildImagePlaceholder() {
+  return const Center(
+    child: Icon(Icons.image_not_supported, 
+      color: Colors.white24, size: 40),
+  );
+}
+
+Widget _buildPriceWidget(Map<String, dynamic> product) {
+  final price = product['price']?.toString() ?? 'N/A';
+  final discountPrice = product['discount_price']?.toString();
+  
+  if (discountPrice != null) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+        Text(
+          'Rs. $discountPrice',
+          style: const TextStyle(
+            color: AppColors.primary,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),Text(
+          'Rs. $price',
+          style: const TextStyle(
+            color: Colors.white54,
+            decoration: TextDecoration.lineThrough,
+            fontSize: 12,
+          ),
+        ),],
+        )
+      ],
+    );
+  }
+  
+  return Text(
+    'Rs. $price',
+    style: const TextStyle(
+      color: Colors.white,
+      fontSize: 16,
+      fontWeight: FontWeight.bold,
+    ),
+  );
+}}

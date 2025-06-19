@@ -286,7 +286,7 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
               return Padding(
                 padding: const EdgeInsets.only(right: 12),
                 child: Chip(
-                  label: Text(outfit, style: const TextStyle(color: Colors.white)),
+                  label: Text(outfit, style: TextStyle(color: AppColors.cardBackgroundColor)),
                   backgroundColor: AppColors.primary.withOpacity(0.2),
                   side: BorderSide(color: AppColors.primary.withOpacity(0.5)),
                 ),
@@ -301,7 +301,7 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
   SliverToBoxAdapter _buildImageAnalysisSection() {
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         child: Column(
           children: [
             Stack(
@@ -311,9 +311,9 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
                   borderRadius: BorderRadius.circular(16),
                   child: Image.file(
                     _selectedImage!,
-                    height: 200,
+                    height: 320,
                     width: double.infinity,
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                   ),
                 ),
                 if (_isAnalyzing)

@@ -66,7 +66,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
                     );
                   }
                 },
-                text: "Continue",
+                text: "Get Started",
               ),
               const SizedBox(height: 30),
             ],
