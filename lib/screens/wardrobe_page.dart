@@ -11,7 +11,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class WardrobePage extends StatefulWidget {
-  
   const WardrobePage({super.key});
 
   @override
@@ -24,102 +23,135 @@ class _WardrobePageState extends State<WardrobePage> {
   bool _isUploading = false;
   final ImageLabeler _labeler = ImageLabeler(options: ImageLabelerOptions());
   double _scanPosition = 0;
-final List<String> _categories = [
-  'shirts', 'polos', 'tshirts', 'denim', 'jeans', 'pants', 'cargo', 'sweater', 'jackets', 'shawl',
-  'kurta', 'kurtapajama', 'shalwarqameez', 'waist coat', '2piece suit', '3 piece suit', 'sportswear',
-  'tanktop', 'vest', 'achkan', 'sherwani', 'princecoat', 'shorts'
-];
-  
+  final List<String> _categories = [
+    // keep exactly the same spelling & case as backend CATS
+    'shirt',
+    'polo',
+    't-shirt',
+    'denim jacket',
+    'jeans',
+    'pants',
+    'cargo pants',
+    'sweater',
+    'jacket',
+    'shawl',
+    'kurta',
+    'kurta pajama',
+    'shalwar qameez',
+    'waistcoat',
+    'formal suit',
+    'sportswear',
+    'tank top',
+    'vest',
+    'achkan',
+    'prince coat',
+    'shorts',
+    'hoodie',
+  ];
+
+  String _titleCase(String txt) =>
+      txt.split(' ').map((w) => w[0].toUpperCase() + w.substring(1)).join(' ');
+
   String _selectedCategory = 'All';
   final List<Map<String, dynamic>> _wardrobeItems = [];
 
   @override
-Widget build(BuildContext context) {
-  return Stack(
-    children: [
-      Scaffold(
-        backgroundColor: AppColors.darkScaffoldColor,
-        body: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              backgroundColor: AppColors.darkScaffoldColor,
-              title: const Text(
-                'My Wardrobe',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: AppColors.darkScaffoldColor,
+          body: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                backgroundColor: AppColors.darkScaffoldColor,
+                title: const Text(
+                  'My Wardrobe',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildCategoryFilter(),
-                    const SizedBox(height: 24),
-                  ],
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildCategoryFilter(),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            _buildWardrobeList(),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _pickAndAnalyzeImage,
-          backgroundColor: AppColors.primary,
-          child: const Icon(Icons.add, color: Colors.white),
-        ),
-      ),
-
-      // ✅ Loader overlay
-      if (_isUploading)
-        Container(
-          color: Colors.black.withOpacity(0.6),
-          child: const Center(
-            child: CircularProgressIndicator(
-              color: Colors.white,
-              strokeWidth: 3,
-            ),
+              _buildWardrobeList(),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: _pickAndAnalyzeImage,
+            backgroundColor: AppColors.primary,
+            child: const Icon(Icons.add, color: Colors.white),
           ),
         ),
-    ],
-  );
-}
+
+        // ✅ Loader overlay
+        if (_isUploading)
+          Container(
+            color: Colors.black.withOpacity(0.6),
+            child: const Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 3,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 
   Widget _buildCategoryFilter() {
     return SizedBox(
       height: 50,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        children: ['All', ..._categories].map((category) {
-          return Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: ChoiceChip(
-              label: Text(
-                category,
-                style: TextStyle(
-                  color: _selectedCategory == category ? AppColors.darkScaffoldColor : Colors.white70,
-                  fontWeight: _selectedCategory == category ? FontWeight.w900 : FontWeight.w600
+        children:
+            ['All', ..._categories].map((category) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: ChoiceChip(
+                  label: Text(
+                    _titleCase(category),
+                    style: TextStyle(
+                      color:
+                          _selectedCategory == category
+                              ? AppColors.darkScaffoldColor
+                              : Colors.white70,
+                      fontWeight:
+                          _selectedCategory == category
+                              ? FontWeight.w900
+                              : FontWeight.w600,
+                    ),
+                  ),
+                  selected: _selectedCategory == category,
+                  selectedColor: AppColors.primary,
+                  backgroundColor: AppColors.cardBackgroundColor,
+                  showCheckmark: false,
+                  shadowColor: AppColors.primary,
+                  selectedShadowColor: AppColors.primary,
+                  surfaceTintColor: AppColors.darkScaffoldColor,
+                  side: BorderSide.none,
+                  onSelected: (selected) {
+                    setState(() {
+                      _selectedCategory = selected ? category : 'All';
+                    });
+                  },
                 ),
-              ),
-              selected: _selectedCategory == category,
-              selectedColor: AppColors.primary,
-              backgroundColor: AppColors.cardBackgroundColor,
-              showCheckmark: false,
-              shadowColor: AppColors.primary,
-              selectedShadowColor: AppColors.primary,
-              surfaceTintColor: AppColors.darkScaffoldColor,
-              side: BorderSide.none,
-              onSelected: (selected) {
-                setState(() {
-                  _selectedCategory = selected ? category : 'All';
-                });
-              },
-            ),
-          );
-        }).toList(),
+              );
+            }).toList(),
       ),
     );
   }
@@ -148,75 +180,9 @@ Widget build(BuildContext context) {
     );
   }
 
-Widget _buildWardrobeGridItem(Map<String, dynamic> item) {
-  return GestureDetector(
-  onTap: () => _showItemDetails(item),
-  child: ClipRRect(
-    borderRadius: BorderRadius.circular(12),
-    child: Image.network(
-      item['imageUrl'],
-      width: double.infinity,
-      height: 200,
-      fit: BoxFit.cover,
-    ),
-  ),);
-}
-
-  Widget _buildWardrobeList() {
-  final filteredItems = _selectedCategory == 'All'
-      ? _wardrobeItems
-      : _wardrobeItems.where((item) => item['category'] == _selectedCategory).toList();
-
-  if (filteredItems.isEmpty) {
-    return SliverFillRemaining(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // ignore: deprecated_member_use
-            Icon(Icons.photo_library_outlined, size: 60, color: Colors.white.withOpacity(0.3)),
-            const SizedBox(height: 16),
-            Text('No clothing items added',
-                // ignore: deprecated_member_use
-                style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 16)),
-            const SizedBox(height: 8),
-            Text('Tap the + button to add items',
-            // ignore: deprecated_member_use
-                style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  return SliverPadding(
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    sliver: SliverGrid(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final item = filteredItems[index];
-          return _buildWardrobeGridItem(item);
-        },
-        childCount: filteredItems.length,
-      ),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.8,
-      ),
-    ),
-  );
-}
-
-  Widget _buildWardrobeItem(Map<String, dynamic> item) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-    child: Container(
-      decoration: BoxDecoration(
-        color: AppColors.samiDarkColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
+  Widget _buildWardrobeGridItem(Map<String, dynamic> item) {
+    return GestureDetector(
+      onTap: () => _showItemDetails(item),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Image.network(
@@ -226,9 +192,90 @@ Widget _buildWardrobeGridItem(Map<String, dynamic> item) {
           fit: BoxFit.cover,
         ),
       ),
-    ),
-  );
-}
+    );
+  }
+
+  Widget _buildWardrobeList() {
+    final filteredItems =
+        _selectedCategory == 'All'
+            ? _wardrobeItems
+            : _wardrobeItems
+                .where((item) => item['category'] == _selectedCategory)
+                .toList();
+
+    if (filteredItems.isEmpty) {
+      return SliverFillRemaining(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // ignore: deprecated_member_use
+              Icon(
+                Icons.photo_library_outlined,
+                size: 60,
+                color: Colors.white.withOpacity(0.3),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No clothing items added',
+                // ignore: deprecated_member_use
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Tap the + button to add items',
+                // ignore: deprecated_member_use
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.4),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      sliver: SliverGrid(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final item = filteredItems[index];
+          return _buildWardrobeGridItem(item);
+        }, childCount: filteredItems.length),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 0.8,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWardrobeItem(Map<String, dynamic> item) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.samiDarkColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.network(
+            item['imageUrl'],
+            width: double.infinity,
+            height: 200,
+            fit: BoxFit.cover,
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<void> _pickAndAnalyzeImage() async {
     try {
@@ -237,16 +284,16 @@ Widget _buildWardrobeGridItem(Map<String, dynamic> item) {
 
       final imageFile = File(pickedFile.path);
 
-      // Check image size
+      // ---------- size & blur checks ----------
       final fileSize = await imageFile.length();
       if (fileSize > 5 * 1024 * 1024) {
-        _showErrorDialog('Image too large', 'Please select an image smaller than 5MB');
+        _showErrorDialog(
+          'Image too large',
+          'Please select an image smaller than 5 MB',
+        );
         return;
       }
-
-      // Check if image is blurry
-      final isBlurry = await _isImageBlurry(imageFile);
-      if (isBlurry) {
+      if (await _isImageBlurry(imageFile)) {
         _showErrorDialog('Blurry image', 'Please select a clear image');
         return;
       }
@@ -256,48 +303,53 @@ Widget _buildWardrobeGridItem(Map<String, dynamic> item) {
         _isUploading = true;
       });
 
-      // Simulate scanning animationve
-      // Send to backend API
-    final apiUrl = 'http://127.0.0.1:8000/predict'; // Replace with your backend URL
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) throw Exception('Not logged in');
-    final request = http.MultipartRequest('POST', Uri.parse(apiUrl))
-      ..fields['email'] = user.email ?? ''
-      ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+      // ---------- send to backend ----------
+      const apiUrl = 'http://192.168.1.7:8000/predict'; // your backend
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('Not logged in');
 
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
+      final request =
+          http.MultipartRequest('POST', Uri.parse(apiUrl))
+            ..fields['email'] = user.email ?? ''
+            ..files.add(
+              await http.MultipartFile.fromPath('image', imageFile.path),
+            );
 
-    setState(() => _isUploading = false);
+      final response = await http.Response.fromStream(await request.send());
 
-    if (response.statusCode != 200) {
-      _showErrorDialog('Server Error', 'Unable to process image.');
-      return;
+      setState(() => _isUploading = false);
+
+      if (response.statusCode != 200) {
+        _showErrorDialog('Server error', 'Unable to process image.');
+        return;
+      }
+
+      final resJson =
+          response.body.isNotEmpty
+              ? Map<String, dynamic>.from(json.decode(response.body))
+              : {};
+
+      if (resJson['valid'] == false) {
+        _showErrorDialog('Invalid image', resJson['reason'] ?? 'Unknown error');
+        return;
+      }
+
+      // ---------- success ----------
+      final backendCategory =
+          (resJson['category'] ?? 'shirt').toString().toLowerCase();
+
+      await _showUploadConfirmation(backendCategory);
+    } catch (e) {
+      setState(() => _isUploading = false);
+      _showErrorDialog('Error', 'Failed to process image: ${e.toString()}');
     }
-
-    final resBody = response.body;
-    final Map<String, dynamic> resJson = resBody.isNotEmpty ? Map<String, dynamic>.from(json.decode(resBody)) : {};
-
-    if (resJson['valid'] == false) {
-      _showErrorDialog('Invalid image', resJson['reason'] ?? 'Unknown error');
-      return;
-    }
-
-    // Backend returned valid, pre-select category from backend
-    final backendCategory = resJson['category'] ?? 'shirts';
-
-    await _showUploadConfirmation(_capitalizeCategory(backendCategory));
-  } catch (e) {
-    setState(() => _isUploading = false);
-    _showErrorDialog('Error', 'Failed to process image: ${e.toString()}');
   }
-}
 
-String _capitalizeCategory(String category) {
-  // Optionally beautify category names
-  if (category.isEmpty) return category;
-  return category[0].toUpperCase() + category.substring(1);
-}
+  String _capitalizeCategory(String category) {
+    // Optionally beautify category names
+    if (category.isEmpty) return category;
+    return category[0].toUpperCase() + category.substring(1);
+  }
 
   Future<bool> _isImageBlurry(File imageFile) async {
     try {
@@ -333,43 +385,54 @@ String _capitalizeCategory(String category) {
 
   String _mapDetectedItemToCategory(String detectedItem) {
     detectedItem = detectedItem.toLowerCase();
-    
-    if (detectedItem.contains('shirt') || detectedItem.contains('top') || detectedItem.contains('t-shirt')) {
+
+    if (detectedItem.contains('shirt') ||
+        detectedItem.contains('top') ||
+        detectedItem.contains('t-shirt')) {
       return 'Tops';
-    } else if (detectedItem.contains('pant') || detectedItem.contains('jean') || detectedItem.contains('trouser')) {
+    } else if (detectedItem.contains('pant') ||
+        detectedItem.contains('jean') ||
+        detectedItem.contains('trouser')) {
       return 'Bottoms';
-    } else if (detectedItem.contains('dress') || detectedItem.contains('gown')) {
+    } else if (detectedItem.contains('dress') ||
+        detectedItem.contains('gown')) {
       return 'Dresses';
-    } else if (detectedItem.contains('jacket') || detectedItem.contains('coat') || detectedItem.contains('hoodie')) {
+    } else if (detectedItem.contains('jacket') ||
+        detectedItem.contains('coat') ||
+        detectedItem.contains('hoodie')) {
       return 'Outerwear';
-    } else if (detectedItem.contains('shoe') || detectedItem.contains('sneaker') || detectedItem.contains('boot')) {
+    } else if (detectedItem.contains('shoe') ||
+        detectedItem.contains('sneaker') ||
+        detectedItem.contains('boot')) {
       return 'Footwear';
-    } else if (detectedItem.contains('accessory') || detectedItem.contains('bag') || detectedItem.contains('hat')) {
+    } else if (detectedItem.contains('accessory') ||
+        detectedItem.contains('bag') ||
+        detectedItem.contains('hat')) {
       return 'Accessories';
-    } else if (detectedItem.contains('formal') || detectedItem.contains('suit')) {
+    } else if (detectedItem.contains('formal') ||
+        detectedItem.contains('suit')) {
       return 'Formal';
     } else if (detectedItem.contains('casual')) {
       return 'Casual';
-    } else if (detectedItem.contains('sport') || detectedItem.contains('active')) {
+    } else if (detectedItem.contains('sport') ||
+        detectedItem.contains('active')) {
       return 'Sportswear';
     }
-    
+
     return 'Other';
   }
 
   Future<void> _showUploadConfirmation(String detectedCategory) async {
     String? selectedCategory = detectedCategory;
-    String? selectedColor = 'Black';
-    String? selectedPattern = 'Solid';
 
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.samiDarkColor,
-        shape: const RoundedRectangleBorder(
-    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-  ),
-  builder: (context) {
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
             return Padding(
@@ -404,14 +467,6 @@ String _capitalizeCategory(String category) {
                   _buildCategoryDropdown(selectedCategory, (newValue) {
                     setState(() => selectedCategory = newValue);
                   }),
-                  const SizedBox(height: 16),
-                  _buildColorDropdown(selectedColor, (newValue) {
-                    setState(() => selectedColor = newValue);
-                  }),
-                  const SizedBox(height: 16),
-                  _buildPatternDropdown(selectedPattern, (newValue) {
-                    setState(() => selectedPattern = newValue);
-                  }),
                   const SizedBox(height: 24),
                   Row(
                     children: [
@@ -426,7 +481,8 @@ String _capitalizeCategory(String category) {
                             side: const BorderSide(color: Colors.white30),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                           child: const Text('Cancel'),
                         ),
@@ -435,18 +491,16 @@ String _capitalizeCategory(String category) {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () async {
-                            if (selectedCategory == null || 
-                                selectedColor == null || 
-                                selectedPattern == null) {
+                            if (selectedCategory == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please fill all fields')));
+                                const SnackBar(
+                                  content: Text('Please fill all fields'),
+                                ),
+                              );
                               return;
                             }
-                            
-                            await _uploadWardrobeItem(
-                              selectedCategory!, 
-                              selectedColor!, 
-                              selectedPattern!);
+
+                            await _uploadWardrobeItem(selectedCategory!);
                             // ignore: use_build_context_synchronously
                             Navigator.pop(context);
                           },
@@ -455,7 +509,8 @@ String _capitalizeCategory(String category) {
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                           child: const Text('Upload'),
                         ),
@@ -471,12 +526,17 @@ String _capitalizeCategory(String category) {
     );
   }
 
-  Widget _buildCategoryDropdown(String? value, ValueChanged<String?> onChanged) {
+  Widget _buildCategoryDropdown(
+    String? value,
+    ValueChanged<String?> onChanged,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Category', 
-          style: TextStyle(color: Colors.white70, fontSize: 14)),
+        const Text(
+          'Category',
+          style: TextStyle(color: Colors.white70, fontSize: 14),
+        ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -491,12 +551,13 @@ String _capitalizeCategory(String category) {
             dropdownColor: AppColors.darkScaffoldColor,
             underline: const SizedBox(),
             style: const TextStyle(color: Colors.white),
-            items: _categories.map((category) {
-              return DropdownMenuItem<String>(
-                value: category,
-                child: Text(category),
-              );
-            }).toList(),
+            items:
+                _categories.map((category) {
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(_titleCase(category)),
+                  );
+                }).toList(),
             onChanged: onChanged,
           ),
         ),
@@ -505,13 +566,28 @@ String _capitalizeCategory(String category) {
   }
 
   Widget _buildColorDropdown(String? value, ValueChanged<String?> onChanged) {
-    final colors = ['Black', 'White', 'Red', 'Blue', 'Green', 'Yellow', 'Pink', 'Purple', 'Brown', 'Gray', 'Beige', 'Other'];
-    
+    final colors = [
+      'Black',
+      'White',
+      'Red',
+      'Blue',
+      'Green',
+      'Yellow',
+      'Pink',
+      'Purple',
+      'Brown',
+      'Gray',
+      'Beige',
+      'Other',
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Color', 
-          style: TextStyle(color: Colors.white70, fontSize: 14)),
+        const Text(
+          'Color',
+          style: TextStyle(color: Colors.white70, fontSize: 14),
+        ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -526,12 +602,13 @@ String _capitalizeCategory(String category) {
             dropdownColor: AppColors.darkScaffoldColor,
             underline: const SizedBox(),
             style: const TextStyle(color: Colors.white),
-            items: colors.map((color) {
-              return DropdownMenuItem<String>(
-                value: color,
-                child: Text(color),
-              );
-            }).toList(),
+            items:
+                colors.map((color) {
+                  return DropdownMenuItem<String>(
+                    value: color,
+                    child: Text(_titleCase(color)),
+                  );
+                }).toList(),
             onChanged: onChanged,
           ),
         ),
@@ -539,85 +616,68 @@ String _capitalizeCategory(String category) {
     );
   }
 
-  Widget _buildPatternDropdown(String? value, ValueChanged<String?> onChanged) {
-    final patterns = ['Solid', 'Striped', 'Floral', 'Plaid', 'Polka Dot', 'Animal Print', 'Graphic', 'Textured', 'Other'];
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Pattern', 
-          style: TextStyle(color: Colors.white70, fontSize: 14)),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: AppColors.darkScaffoldColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white30),
-          ),
-          child: DropdownButton<String>(
-            value: value,
-            isExpanded: true,
-            dropdownColor: AppColors.darkScaffoldColor,
-            underline: const SizedBox(),
-            style: const TextStyle(color: Colors.white),
-            items: patterns.map((pattern) {
-              return DropdownMenuItem<String>(
-                value: pattern,
-                child: Text(pattern),
-              );
-            }).toList(),
-            onChanged: onChanged,
-          ),
-        ),
-      ],
-    );
-  }
+  Future<void> _uploadWardrobeItem(String category) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null || _selectedImage == null) return;
 
-  Future<void> _uploadWardrobeItem(String category, String color, String pattern) async {
-  try {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null || _selectedImage == null) return;
+      // Create file reference
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileRef = FirebaseStorage.instance.ref().child(
+        'wardrobe/${user.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg',
+      );
 
-    final ref = FirebaseStorage.instance
-        .ref()
-        .child('wardrobe/${user.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg');
-    
-    await ref.putFile(_selectedImage!);
-    final imageUrl = await ref.getDownloadURL();
+      final uploadTask = await fileRef.putFile(_selectedImage!); // ✅ Await this
 
-    // Save to Firestore under users/userId/wardrobe
-    final firestore = FirebaseFirestore.instance;
-    await firestore
-      .collection('users')
-      .doc(user.uid)
-      .collection('wardrobe')
-      .add({
-        'imageUrl': imageUrl,
-        'category': category,
-        'color': color,
-        'pattern': pattern,
-        'uploadDate': DateTime.now().toIso8601String(),
+      final imageUrl = await fileRef.getDownloadURL();
+
+      // Save to Firestore under users/{email}/wardrobe (as array)
+      final firestore = FirebaseFirestore.instance;
+      final docRef = firestore.collection('users').doc(user.email);
+
+      await docRef.set({
+        'wardrobe': FieldValue.arrayUnion([
+          {
+            'imageUrl': imageUrl,
+            'category': category,
+            'uploadDate': DateTime.now().toIso8601String(),
+          },
+        ]),
+      }, SetOptions(merge: true)); // merge instead of overwrite
+
+      setState(() {
+        _wardrobeItems.insert(0, {
+          'imageUrl': imageUrl,
+          'category': category,
+          'uploadDate': DateTime.now().toString().split(' ')[0],
+        });
+        _isUploading = false;
       });
 
-    setState(() {
-      _wardrobeItems.insert(0, {
-        'imageUrl': imageUrl,
-        'category': category,
-        'color': color,
-        'pattern': pattern,
-        'uploadDate': DateTime.now().toString().split(' ')[0]
-      });
-      _isUploading = false;
-    });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✅ Item added to wardrobe!')),
+      );
+    } catch (e) {
+      setState(() => _isUploading = false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Item added to wardrobe!')));
-  } catch (e) {
-    setState(() => _isUploading = false);
-    _showErrorDialog('Upload failed', 'Failed to upload item: ${e.toString()}');
+      await showDialog(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: const Text('Upload Failed'),
+              content: Text(
+                'An error occurred while uploading:\n\n${e.toString()}',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+      );
+    }
   }
-}
 
   void _showItemDetails(Map<String, dynamic> item) {
     showModalBottomSheet(
@@ -626,58 +686,90 @@ String _capitalizeCategory(String category) {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(item['imageUrl'], height: 200, fit: BoxFit.cover),
+      builder:
+          (context) => Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    item['imageUrl'],
+                    height: 200,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  item['category'],
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${item['category']}',
+                  // ignore: deprecated_member_use
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Added on ${item['uploadDate']}',
+                  // ignore: deprecated_member_use
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: const Text('Close'),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(item['category'], 
-              style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('${item['color']} • ${item['pattern']}', 
-              // ignore: deprecated_member_use
-              style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 16)),
-            const SizedBox(height: 8),
-            Text('Added on ${item['uploadDate']}', 
-              // ignore: deprecated_member_use
-              style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14)),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20)),
-              ),
-              child: const Text('Close'),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
   void _showErrorDialog(String title, String message) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.samiDarkColor,
-        title: Text(title, style: const TextStyle(color: Colors.white)),
-        content: Text(message, style: const TextStyle(color: Colors.white70)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK', style: TextStyle(color: AppColors.primary)),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: AppColors.samiDarkColor,
+            title: Text(title, style: const TextStyle(color: Colors.white)),
+            content: Text(
+              message,
+              style: const TextStyle(color: Colors.white70),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'OK',
+                  style: TextStyle(color: AppColors.primary),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }

@@ -2,18 +2,22 @@ import io, torch, open_clip, numpy as np
 from PIL import Image
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, EmailStr
+import dns.resolver
+import smtplib
+import base64
 
 app = FastAPI(title="Male-Clothing API")
 
 CATS = [
     "shirt", "polo", "t-shirt", "denim jacket", "jeans", "pants", "cargo pants",
     "sweater", "jacket", "shawl", "kurta", "kurta pajama", "shalwar qameez",
-    "waistcoat", "Format Suit", "sportswear", "tank top",
+    "waistcoat", "Formal Suit", "sportswear", "tank top",
     "vest", "achkan", "prince coat", "shorts", "hoodie"
 ]
 
 MALE_ONLY = {
-    "kurta", "kurta pajama", "shalwar qameez", "waistcoat", "Format Suit",
+    "kurta", "kurta pajama", "shalwar qameez", "waistcoat", "Formal Suit",
     "Prince Coat", "achkan", "prince coat"
 }
 
@@ -112,10 +116,33 @@ async def predict(
         return JSONResponse({"valid": False, "reason": "Image unlikely to be clothing"})
     if not is_male:
         return JSONResponse({"valid": False, "reason": "Detected as non-male clothing"})
+
+    print ({
+        "valid":   True,
+        "email":   email,
+        "category": cat,
+        "image": f"data:image/jpeg;base64,{base64.b64encode(await image.read()).decode()}",
+        "confidence": round(conf, 3)
+    })
     return {
         "valid":   True,
         "email":   email,
         "category": cat,
-        "image": image,
+        "image": f"data:image/jpeg;base64,{base64.b64encode(await image.read()).decode()}",
         "confidence": round(conf, 3)
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    import socket
+
+    # Get your machine's IPv4 address
+    hostname = socket.gethostname()
+    ip_address = socket.gethostbyname(hostname)
+
+    uvicorn.run(
+        "app:app",  # replace 'app' with your filename if different
+        host=ip_address,  # bind to your local IPv4
+        port=8000,
+        reload=True
+    )

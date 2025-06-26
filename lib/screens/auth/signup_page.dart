@@ -67,7 +67,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       'label': 'Balanced Shape ',
       'image': 'assets/bodyType/body7.png',
       'desc': 'Broad top, defined lower waist.',
-    }
+    },
   ];
 
   @override
@@ -136,19 +136,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
         return;
       }
 
-      await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
-
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
       // Create Firestore user document
       await FirebaseFirestore.instance.collection('users').doc(email).set({
-          'name': name,
-          'email': email,
-          'bodyType': bodyTypes[selectedBodyTypeIndex]['label'],
-          'wardrobe': [],
-          'preferences': [],
-          'createdAt': FieldValue.serverTimestamp(),
-        });
+        'name': name,
+        'email': email,
+        'bodyType': bodyTypes[selectedBodyTypeIndex]['label'],
+        'wardrobe': [],
+        'preferences': [],
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
       if (mounted) {
         Navigator.pushReplacement(
@@ -337,7 +338,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 bt['image']!,
                                                 width: 120,
                                                 height: 120,
-                                                fit: BoxFit.cover,
+                                                fit: BoxFit.contain,
                                               ),
                                             ),
                                           ),
@@ -352,8 +353,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 ),
                                                 child: Container(
                                                   color: Colors.black
-                                                      // ignore: deprecated_member_use
-                                                      .withOpacity(0.1),
+                                                  // ignore: deprecated_member_use
+                                                  .withOpacity(0.1),
                                                 ),
                                               ),
                                             ),
