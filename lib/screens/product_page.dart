@@ -1,9 +1,8 @@
 import 'package:fashion_fusion/widgets/ui/loader.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart';
 import '../constants/colors.dart';
-import 'product_detail.dart';
+import '../widgets/cards/product_card.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProductPage extends StatefulWidget {
   const ProductPage({super.key});
@@ -30,42 +29,29 @@ class _ProductPageState extends State<ProductPage> {
 
   Future<void> _loadProducts() async {
   try {
-    final String response = await rootBundle.loadString('assets/data/data.json');
-    final List<dynamic> data = await json.decode(response) as List;
-    
-    if (data.isEmpty) {
-      debugPrint('JSON data is empty');
-      return;
-    }
+    final snap = await FirebaseFirestore.instance
+        .collection('products')
+        .get();
+
+    // 🔑  Merge each doc’s ID under the key "id"
+    final data = snap.docs.map((doc) => {
+          'id': doc.id,          //  <--  "product1", "product2", …
+          ...doc.data()          //  <--  the JSON fields shown above
+        }).toList();
 
     setState(() {
-      _products = List<Map<String, dynamic>>.from(data);
-      _filteredProducts = _products;
-      _brands = {'All'};
-      _categories = {'All'};
-      
-      for (var product in _products) {
-        if (product['brand'] != null) {
-          _brands.add(product['brand'].toString());
-        }
-        if (product['category'] != null) {
-          _categories.add(product['category'].toString());
-        }
-      }
-      
+      _products         = data;
+      _filteredProducts = data;
+      _brands     = {'All', ...data.map((p) => p['brand'].toString())};
+      _categories = {'All', ...data.map((p) => p['category'].toString())};
       _loading = false;
     });
-    
-    debugPrint('Loaded ${_products.length} products');
-    debugPrint('Brands: $_brands');
-    debugPrint('Categories: $_categories');
   } catch (e) {
     debugPrint('Error loading products: $e');
-    setState(() {
-      _loading = false;
-    });
+    setState(() => _loading = false);
   }
 }
+
   void _filterProducts() {
     setState(() {
       _filteredProducts = _products.where((product) {
@@ -83,8 +69,7 @@ class _ProductPageState extends State<ProductPage> {
 Widget build(BuildContext context) {
   if (_loading) {
     return const Center(
-      child: CircularProgressIndicator(
-        color: AppColors.primary),
+      child: CustomLoadingAnimation(),
     );
   }
 
@@ -178,6 +163,7 @@ Widget build(BuildContext context) {
                     children: [
                       Text(
                         '${_filteredProducts.length} products found',
+                        // ignore: deprecated_member_use
                         style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
                       ),
                       if (_selectedBrand != 'All' || _selectedCategory != 'All' || _searchQuery.isNotEmpty)
@@ -200,10 +186,13 @@ Widget build(BuildContext context) {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
+                                // ignore: deprecated_member_use
                                 Icon(Icons.search_off, color: Colors.white.withOpacity(0.3), size: 50),
                                 const SizedBox(height: 12),
+                                // ignore: deprecated_member_use
                                 Text('No products found', style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 16)),
                                 const SizedBox(height: 4),
+                                // ignore: deprecated_member_use
                                 Text('Try changing filters', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
                               ],
                             ),
@@ -215,11 +204,11 @@ Widget build(BuildContext context) {
                               crossAxisCount: 2,
                               mainAxisSpacing: 16,
                               crossAxisSpacing: 16,
-                              childAspectRatio: 0.65,
+                              childAspectRatio: 0.62,
                             ),
                             itemBuilder: (context, index) {
                               final product = _filteredProducts[index];
-                              return _buildProductCard(product);
+                              return ProductCard(product: product, parentContext: context);
                             },
                           ),
                   ),
@@ -263,142 +252,5 @@ Widget build(BuildContext context) {
     );
   }
 
- Widget _buildProductCard(dynamic product) {
-  // Ensure product is actually a Map
-  if (product is! Map<String, dynamic>) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardBackgroundColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: const Center(
-        child: Text('Invalid product', 
-          style: TextStyle(color: Colors.white)),
-      ),
-    );
-  }
-
-  return GestureDetector(
-    onTap: () => Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ProductDetailPage(product: product),
-      ),
-    ),
-    child: Container(
-      decoration: BoxDecoration(
-        color: AppColors.cardBackgroundColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AspectRatio(
-            aspectRatio: 1,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16)),
-                color: Colors.black.withOpacity(0.1),
-              ),
-              child: product['image'] != null 
-                  ? Image.network(
-                      product['image'].toString(),
-                      fit: BoxFit.scaleDown,
-                      errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
-                    )
-                  : _buildImagePlaceholder(),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product['title']?.toString() ?? 'No Title',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  product['brand']?.toString() ?? 'No Brand',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
-                    fontSize: 12,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 1),
-                _buildPriceWidget(product),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
+ 
 }
-
-Widget _buildImagePlaceholder() {
-  return const Center(
-    child: Icon(Icons.image_not_supported, 
-      color: Colors.white24, size: 40),
-  );
-}
-
-Widget _buildPriceWidget(Map<String, dynamic> product) {
-  final price = product['price']?.toString() ?? 'N/A';
-  final discountPrice = product['discount_price']?.toString();
-  
-  if (discountPrice != null) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-        Text(
-          'Rs. $discountPrice',
-          style: const TextStyle(
-            color: AppColors.primary,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),Text(
-          'Rs. $price',
-          style: const TextStyle(
-            color: Colors.white54,
-            decoration: TextDecoration.lineThrough,
-            fontSize: 12,
-          ),
-        ),],
-        )
-      ],
-    );
-  }
-  
-  return Text(
-    'Rs. $price',
-    style: const TextStyle(
-      color: Colors.white,
-      fontSize: 16,
-      fontWeight: FontWeight.bold,
-    ),
-  );
-}}

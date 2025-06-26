@@ -91,9 +91,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
+                        // ignore: deprecated_member_use
                         color: AppColors.samiDarkColor.withOpacity(0.4),
                         boxShadow: [
                           BoxShadow(
+                            // ignore: deprecated_member_use
                             color: AppColors.samiDarkColor.withOpacity(0),
                             blurRadius: 10,
                           ),

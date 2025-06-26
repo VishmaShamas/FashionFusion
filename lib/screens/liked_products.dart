@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import '../constants/colors.dart';
-import '../liked_products_manager.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fashion_fusion/constants/colors.dart';
+import 'package:fashion_fusion/widgets/cards/product_card.dart';
 
 class LikedProducts extends StatefulWidget {
   const LikedProducts({super.key});
@@ -10,220 +12,131 @@ class LikedProducts extends StatefulWidget {
 }
 
 class _LikedProductsState extends State<LikedProducts> {
-  final LikedProductsManager _manager = LikedProductsManager();
+  late Future<List<Map<String, dynamic>>> _likedProductsFuture;
 
   @override
   void initState() {
     super.initState();
-    _manager.addListener(_onLikedChanged);
+    _likedProductsFuture = _fetchLikedProducts();
   }
 
-  @override
-  void dispose() {
-    _manager.removeListener(_onLikedChanged);
-    super.dispose();
+  Future<List<Map<String, dynamic>>> _fetchLikedProducts() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return [];
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.email)
+        .collection('likedProducts')
+        .get();
+
+    return snapshot.docs.map((doc) => doc.data()).toList();
   }
 
-  void _onLikedChanged() {
-    setState(() {});
+  Future<void> _unlikeProduct(String productId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.email)
+        .collection('likedProducts')
+        .doc(productId)
+        .delete();
+
+    // Refresh the list
+    setState(() {
+      _likedProductsFuture = _fetchLikedProducts();
+    });
+
+    // ignore: use_build_context_synchronously
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Removed from favorites')),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final likedProducts = _manager.likedProducts;
     return Scaffold(
       backgroundColor: AppColors.darkScaffoldColor,
       appBar: AppBar(
-        title: const Text(
-          'Your Favorites',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Your Favorites', style: TextStyle(color: Colors.white)),
         backgroundColor: AppColors.darkScaffoldColor,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: likedProducts.isEmpty
-          ? Center(
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _likedProductsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: Colors.white));
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.favorite_border,
-                    size: 60,
-                    color: Colors.white.withOpacity(0.3),
-                  ),
+                  // ignore: deprecated_member_use
+                  Icon(Icons.favorite_border, size: 60, color: Colors.white.withOpacity(0.3)),
                   const SizedBox(height: 16),
-                  Text(
-                    'No favorites yet',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
-                      fontSize: 18,
-                    ),
-                  ),
+                  Text('No favorites yet',
+                      // ignore: deprecated_member_use
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 18)),
                   const SizedBox(height: 8),
-                  Text(
-                    'Like products to see them here',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.4),
-                      fontSize: 14,
-                    ),
-                  ),
+                  Text('Like products to see them here',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 14)),
                 ],
               ),
-            )
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.69,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                ),
-                itemCount: likedProducts.length,
-                itemBuilder: (context, index) {
-                  final product = likedProducts[index];
-                  return _buildLikedProductCard(product);
-                },
-              ),
-            ),
-    );
-  }
+            );
+          }
 
-  Widget _buildLikedProductCard(Map<String, dynamic> product) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.samiDarkColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Product Image
-              AspectRatio(
-                aspectRatio: 1,
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
-                  ),
-                  child: product['image']?.toString().isNotEmpty == true
-                      ? Image.network(
-                          product['image'],
-                          fit: BoxFit.scaleDown,
-                          width: double.infinity,
-                          errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
-                        )
-                      : _buildImagePlaceholder(),
-                ),
+          final likedProducts = snapshot.data!;
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: GridView.builder(
+              itemCount: likedProducts.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.64,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
               ),
-              // Product Details
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              itemBuilder: (context, index) {
+                final product = likedProducts[index];
+                return Stack(
                   children: [
-                    Text(
-                      product['title']?.toString() ?? 'No Title',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    ProductCard(
+                      product: product,
+                      parentContext: context,
                     ),
-                    const SizedBox(height: 8),
-                    _buildPriceWidget(product),
+                    // Heart Button Positioned
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: GestureDetector(
+                        onTap: () {
+                          final productId = product['id']?.toString();
+                          if (productId != null) {
+                            _unlikeProduct(productId);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.favorite, color: Colors.red, size: 20),
+                        ),
+                      ),
+                    ),
                   ],
-                ),
-              ),
-            ],
-          ),
-          // Like Button
-          Positioned(
-            top: 8,
-            right: 8,
-            child: GestureDetector(
-              onTap: () => _manager.unlikeProduct(product),
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.4),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.favorite,
-                  color: Colors.red,
-                  size: 24,
-                ),
-              ),
+                );
+              },
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
-
-  Widget _buildImagePlaceholder() {
-    return Container(
-      color: Colors.black.withOpacity(0.1),
-      child: const Center(
-        child: Icon(
-          Icons.image_not_supported,
-          color: Colors.white24,
-          size: 40,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPriceWidget(Map<String, dynamic> product) {
-  final price = product['price']?.toString() ?? 'N/A';
-  final discountPrice = product['discount_price']?.toString();
-  
-  if (discountPrice != null) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-        Text(
-          'Rs. $discountPrice',
-          style: const TextStyle(
-            color: AppColors.primary,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),Text(
-          'Rs. $price',
-          style: const TextStyle(
-            color: Colors.white54,
-            decoration: TextDecoration.lineThrough,
-            fontSize: 12,
-          ),
-        ),],
-        )
-      ],
-    );
-  }
-  
-  return Text(
-    'Rs. $price',
-    style: const TextStyle(
-      color: Colors.white,
-      fontSize: 16,
-      fontWeight: FontWeight.bold,
-    ),
-  );
-}}
+}

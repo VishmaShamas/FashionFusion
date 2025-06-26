@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
 import '../liked_products_manager.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -33,21 +36,48 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     });
   }
 
-  void _toggleLike() {
-    if (_isLiked) {
-      _manager.unlikeProduct(widget.product);
-    } else {
-      _manager.likeProduct(widget.product);
-    }
+  void _toggleLike() async {
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    // Handle unauthenticated user (optional)
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please log in to like products.')),
+    );
+    return;
   }
+
+  final userRef = FirebaseFirestore.instance.collection('users').doc(user.email);
+  final likedRef = userRef.collection('likedProducts');
+  final productId = widget.product['id']?.toString();
+
+  if (_isLiked) {
+    // Unlike: Remove from Firestore
+    if (productId != null) {
+      await likedRef.doc(productId).delete();
+    }
+    _manager.unlikeProduct(widget.product);
+  } else {
+    // Like: Save in Firestore
+    if (productId != null) {
+      await likedRef.doc(productId).set(widget.product);
+    }
+    _manager.likeProduct(widget.product);
+  }
+
+  setState(() {
+    _isLiked = !_isLiked;
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
     final hasDiscount = widget.product['discount_price'] != null && widget.product['discount_price'].toString().isNotEmpty;
     return Scaffold(
-      backgroundColor: AppColors.blackColor,
+      backgroundColor: AppColors.darkScaffoldColor,
       appBar: AppBar(
-        backgroundColor: AppColors.blackColor,
+        backgroundColor: AppColors.darkScaffoldColor,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
@@ -186,12 +216,28 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           ),
           padding: const EdgeInsets.symmetric(vertical: 16), // Optional: consistent height
         ),
-        onPressed: () {
-          final url = widget.product['url'];
-          if (url != null && url.toString().isNotEmpty) {
-            // TODO: Implement url_launcher logic
-          }
-        },
+        onPressed: () async {
+  final url = widget.product['url']?.toString() ?? '';
+  if (url.isEmpty) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Product URL not available')),
+    );
+    return;
+  }
+  launch(url);
+  // final uri = Uri.tryParse(url);
+  // if (uri != null && await canLaunchUrl(uri)) {
+  //   await launchUrl(uri, mode: LaunchMode.externalApplication);
+  // } else {
+  //   if (!context.mounted) return;
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     const SnackBar(content: Text('Could not open the link')),
+  //   );
+  // }
+},
+
+
         child: const Text(
           'Buy Now',
           style: TextStyle(

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fashion_fusion/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -20,11 +21,50 @@ class _ProfilePageState extends State<ProfilePage> {
   User? user;
   final ImagePicker _picker = ImagePicker();
   File? _selectedImage;
+  Map<String, dynamic>? userData;
+  List<dynamic> wardrobe = [];
+  List<dynamic> likedProducts = [];
+  List<dynamic> preferences = [];
+  bool _isLoading = true;
+  bool _isSaving = false;
+  bool _hasChanges = false;
 
   @override
   void initState() {
     super.initState();
     user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _loadUserData();
+    }
+  }
+
+  Future<void> _loadUserData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    final userDoc = FirebaseFirestore.instance.collection('users').doc(user!.email);
+
+    final docSnapshot = await userDoc.get();
+    if (docSnapshot.exists) {
+      userData = docSnapshot.data();
+    }
+
+    // Fetch wardrobe
+    final wardrobeSnapshot = await userDoc.collection('wardrobe').limit(10).get();
+    wardrobe = wardrobeSnapshot.docs.map((doc) => doc.data()).toList();
+
+    // Fetch liked products
+    final likedSnapshot = await userDoc.collection('likedProducts').limit(10).get();
+    likedProducts = likedSnapshot.docs.map((doc) => doc.data()).toList();
+
+    // Fetch preferences
+    final prefSnapshot = await userDoc.collection('preferences').limit(10).get();
+    preferences = prefSnapshot.docs.map((doc) => doc.data()).toList(); // Assuming doc ID is preference name
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<User?> _getCurrentUser() async {
@@ -86,6 +126,10 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProfileContent(User user) {
+    if (_isLoading) {
+      return const Center(child: CustomLoadingAnimation());
+    }
+    
     return CustomScrollView(
       slivers: [
         SliverAppBar(
@@ -129,22 +173,26 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Column(
               children: [
-                Text(user.displayName ?? 'No Name',
+                Text(userData?['name'] ?? '',
                     style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                Text(user.email ?? '',
+                Text(userData?['email'] ?? '',
                     style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16)),
                 const SizedBox(height: 24),
                 _buildStatsRow(),
                 const SizedBox(height: 32),
                 _buildActionButtons(),
                 const SizedBox(height: 40),
-                _buildTrendingStyles(),
-                const SizedBox(height: 32),
+                // _buildTrendingStyles(),
+                // const SizedBox(height: 32),
                 _buildSectionTitle("Your Style Preferences"),
                 const SizedBox(height: 16),
                 _buildStylePreferences(),
                 const SizedBox(height: 32),
+                _buildSectionTitle("Your Wardrobe"),
+                const SizedBox(height: 16),
+                _buildWardrobeCarousel(),
+                const SizedBox(height: 32,),
                 _buildSectionTitle("Liked Items"),
                 const SizedBox(height: 16),
                 _buildLikedItemsGrid(),
@@ -309,8 +357,9 @@ class _ProfilePageState extends State<ProfilePage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildStatItem("124", "Likes"),
-        _buildStatItem("42", "Outfits"),
+        _buildStatItem("${likedProducts.length}", "Liked Items"),
+        _buildStatItem("${wardrobe.length}", "Wardrobe"),
+        _buildStatItem("${preferences.length}", "Preferences"),
       ],
     ).animate().fadeIn().slideY(begin: 0.2, end: 0);
   }
@@ -382,16 +431,22 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildStylePreferences() {
+    if (preferences.isEmpty) {
+      return _buildEmptyMessage("No preferences added yet.");
+    }
+
     return Wrap(
       spacing: 12,
       runSpacing: 12,
-      children: [
-        _buildStyleChip("Casual", Icons.weekend),
-        _buildStyleChip("Formal", Icons.work),
-        _buildStyleChip("Streetwear", Icons.streetview),
-        _buildStyleChip("Bohemian", Icons.brush),
-        _buildStyleChip("Minimalist", Icons.format_shapes),
-      ],
+      children: preferences.map((pref) {
+        return Chip(
+          avatar: Icon(Icons.style, size: 18, color: Colors.white),
+          label: Text(pref, style: const TextStyle(color: Colors.white)),
+          backgroundColor: AppColors.primary.withOpacity(0.2),
+          side: BorderSide(color: AppColors.primary.withOpacity(0.5)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        );
+      }).toList(),
     );
   }
 
@@ -406,12 +461,17 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildLikedItemsGrid() {
+    if (likedProducts.isEmpty) {
+      return _buildEmptyMessage("No liked products yet.");
+    }
+
     return SizedBox(
       height: 180,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: 5,
+        itemCount: likedProducts.length,
         itemBuilder: (context, index) {
+          final item = likedProducts[index];
           return Container(
             width: 140,
             margin: const EdgeInsets.only(right: 16),
@@ -419,7 +479,7 @@ class _ProfilePageState extends State<ProfilePage> {
               borderRadius: BorderRadius.circular(16),
               color: AppColors.samiDarkColor,
               image: DecorationImage(
-                image: NetworkImage("https://source.unsplash.com/random/300x300/?fashion,clothing&$index"),
+                image: NetworkImage(item['image'] ?? ''),
                 fit: BoxFit.cover,
               ),
             ),
@@ -445,9 +505,15 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
   Future<void> _editProfile() async {
     final nameController = TextEditingController(text: user?.displayName ?? '');
+    nameController.addListener(() {
+      final changedName = nameController.text.trim() != (user?.displayName ?? '');
+      setState(() {
+        _hasChanges = changedName || _selectedImage != null;
+      });
+    });
+
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -484,7 +550,7 @@ class _ProfilePageState extends State<ProfilePage> {
               controller: nameController,
               style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
-                labelText: 'Display Name',
+                labelText: 'Name',
                 labelStyle: TextStyle(color: Colors.white70),
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: Colors.white30),
@@ -496,42 +562,70 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () async {
-                final newName = nameController.text.trim();
-                String? imageUrl;
+              onPressed: !_hasChanges || _isSaving
+                  ? null
+                  : () async {
+                      setState(() {
+                        _isSaving = true;
+                      });
 
-                if (_selectedImage != null) {
-                  final ref = FirebaseStorage.instance
-                      .ref()
-                      .child('profile_pics/${user!.uid}.jpg');
-                  await ref.putFile(_selectedImage!);
-                  imageUrl = await ref.getDownloadURL();
-                }
+                      final newName = nameController.text.trim();
+                      String? imageUrl;
 
-                await user!.updateDisplayName(newName);
-                if (imageUrl != null) {
-                  await user!.updatePhotoURL(imageUrl);
-                }
+                      if (_selectedImage != null) {
+                        final ref = FirebaseStorage.instance.ref().child('profile_pics/${user!.uid}.jpg');
+                        await ref.putFile(_selectedImage!);
+                        imageUrl = await ref.getDownloadURL();
+                      }
 
-                await user!.reload();
-                user = FirebaseAuth.instance.currentUser;
+                      final updates = <String, dynamic>{};
 
-                setState(() {
-                  _selectedImage = null;
-                });
+                      if (newName.isNotEmpty && newName != user!.displayName) {
+                        await user!.updateDisplayName(newName);
+                        updates['name'] = newName;
+                      }
 
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: const Text('Save', style: TextStyle(fontSize: 16)),
-            ),
+                      if (imageUrl != null) {
+                        await user!.updatePhotoURL(imageUrl);
+                        updates['image'] = imageUrl; // updated key
+                      }
+
+                      await user!.reload();
+                      user = FirebaseAuth.instance.currentUser;
+
+                      if (updates.isNotEmpty) {
+                        updates['email'] = user!.email;
+                        final userRef = FirebaseFirestore.instance.collection('users').doc(user!.uid);
+                        await userRef.set(updates, SetOptions(merge: true));
+                      }
+
+                      setState(() {
+                        _isSaving = false;
+                        _selectedImage = null;
+                        _hasChanges = false;
+                      });
+
+                      if (context.mounted) Navigator.pop(context);
+        },
+  style: ElevatedButton.styleFrom(
+    backgroundColor: AppColors.primary,
+    foregroundColor: Colors.white,
+    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+    ),
+  ),
+  child: _isSaving
+      ? const SizedBox(
+          height: 20,
+          width: 20,
+          child: CircularProgressIndicator(
+            color: Colors.white,
+            strokeWidth: 2,
+          ),
+        )
+      : const Text('Save', style: TextStyle(fontSize: 16)),
+),
           ],
         ),
       ),
@@ -543,6 +637,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (pickedFile != null) {
       setState(() {
         _selectedImage = File(pickedFile.path);
+        _hasChanges = true; // image picked → form has changes
       });
     }
   }
@@ -568,4 +663,70 @@ class _ProfilePageState extends State<ProfilePage> {
       }
     }
   }
+
+  Widget _buildWardrobeCarousel() {
+    if (wardrobe.isEmpty) {
+      return _buildEmptyMessage("No wardrobe items uploaded yet.");
+    }
+
+    return SizedBox(
+      height: 200,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: wardrobe.length,
+        itemBuilder: (context, index) {
+          final item = wardrobe[index];
+          return Container(
+            width: 140,
+            margin: const EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: AppColors.samiDarkColor,
+              image: DecorationImage(
+                image: NetworkImage(item['image'] ?? ''),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                ),
+              ),
+              child: Align(
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    item['title'] ?? 'Outfit',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyMessage(String message) {
+    return Container(
+      height: 120,
+      alignment: Alignment.center,
+      child: Text(
+        message,
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.6),
+          fontSize: 14,
+          fontStyle: FontStyle.italic,
+        ),
+      ),
+    );
+}
+
+
 }

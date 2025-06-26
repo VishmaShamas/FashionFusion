@@ -1,14 +1,17 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import 'package:fashion_fusion/constants/colors.dart';
-// ignore: depend_on_referenced_packages
 import 'package:image/image.dart' as img;
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class WardrobePage extends StatefulWidget {
+  
   const WardrobePage({super.key});
 
   @override
@@ -21,62 +24,69 @@ class _WardrobePageState extends State<WardrobePage> {
   bool _isUploading = false;
   final ImageLabeler _labeler = ImageLabeler(options: ImageLabelerOptions());
   double _scanPosition = 0;
-
-  final List<String> _categories = [
-    'Tops',
-    'Bottoms',
-    'Dresses',
-    'Outerwear',
-    'Footwear',
-    'Accessories',
-    'Formal',
-    'Casual',
-    'Sportswear',
-  ];
-
+final List<String> _categories = [
+  'shirts', 'polos', 'tshirts', 'denim', 'jeans', 'pants', 'cargo', 'sweater', 'jackets', 'shawl',
+  'kurta', 'kurtapajama', 'shalwarqameez', 'waist coat', '2piece suit', '3 piece suit', 'sportswear',
+  'tanktop', 'vest', 'achkan', 'sherwani', 'princecoat', 'shorts'
+];
+  
   String _selectedCategory = 'All';
   final List<Map<String, dynamic>> _wardrobeItems = [];
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.darkScaffoldColor,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            backgroundColor: AppColors.darkScaffoldColor,
-            title: const Text(
-              'My Wardrobe',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
+Widget build(BuildContext context) {
+  return Stack(
+    children: [
+      Scaffold(
+        backgroundColor: AppColors.darkScaffoldColor,
+        body: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              backgroundColor: AppColors.darkScaffoldColor,
+              title: const Text(
+                'My Wardrobe',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildCategoryFilter(),
-                  const SizedBox(height: 24),
-                  // _buildSectionTitle("Your Clothing Collection"),
-                  // const SizedBox(height: 16),
-                ],
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildCategoryFilter(),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
+            _buildWardrobeList(),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _pickAndAnalyzeImage,
+          backgroundColor: AppColors.primary,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
+      ),
+
+      // ✅ Loader overlay
+      if (_isUploading)
+        Container(
+          color: Colors.black.withOpacity(0.6),
+          child: const Center(
+            child: CircularProgressIndicator(
+              color: Colors.white,
+              strokeWidth: 3,
+            ),
           ),
-          _buildWardrobeList(),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _pickAndAnalyzeImage,
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-    );
-  }
+        ),
+    ],
+  );
+}
 
   Widget _buildCategoryFilter() {
     return SizedBox(
@@ -163,12 +173,15 @@ Widget _buildWardrobeGridItem(Map<String, dynamic> item) {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // ignore: deprecated_member_use
             Icon(Icons.photo_library_outlined, size: 60, color: Colors.white.withOpacity(0.3)),
             const SizedBox(height: 16),
             Text('No clothing items added',
+                // ignore: deprecated_member_use
                 style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 16)),
             const SizedBox(height: 8),
             Text('Tap the + button to add items',
+            // ignore: deprecated_member_use
                 style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 14)),
           ],
         ),
@@ -243,44 +256,48 @@ Widget _buildWardrobeGridItem(Map<String, dynamic> item) {
         _isUploading = true;
       });
 
-      // Simulate scanning animation
-      for (int i = 0; i < 5; i++) {
-        setState(() => _scanPosition = (i % 2 == 0) ? 1.0 : 0.0);
-        await Future.delayed(const Duration(milliseconds: 300));
-      }
+      // Simulate scanning animationve
+      // Send to backend API
+    final apiUrl = 'http://127.0.0.1:8000/predict'; // Replace with your backend URL
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception('Not logged in');
+    final request = http.MultipartRequest('POST', Uri.parse(apiUrl))
+      ..fields['email'] = user.email ?? ''
+      ..files.add(await http.MultipartFile.fromPath('image', imageFile.path));
 
-      // Analyze image with ML Kit
-      final inputImage = InputImage.fromFile(imageFile);
-      final labels = await _labeler.processImage(inputImage);
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
 
-      // Filter for clothing items
-      final clothingLabels = labels.where((label) =>
-          label.label.toLowerCase().contains('shirt') ||
-          label.label.toLowerCase().contains('pant') ||
-          label.label.toLowerCase().contains('dress') ||
-          label.label.toLowerCase().contains('jacket') ||
-          label.label.toLowerCase().contains('shoe') ||
-          label.label.toLowerCase().contains('accessory') ||
-          label.label.toLowerCase().contains('clothing') ||
-          label.label.toLowerCase().contains('apparel')).toList();
+    setState(() => _isUploading = false);
 
-      if (clothingLabels.isEmpty) {
-        setState(() => _isUploading = false);
-        _showErrorDialog('Not a clothing item', 'Please select an image of clothing');
-        return;
-      }
-
-      // Get most confident label
-      clothingLabels.sort((a, b) => b.confidence.compareTo(a.confidence));
-      final detectedItem = clothingLabels.first.label;
-      final detectedCategory = _mapDetectedItemToCategory(detectedItem);
-
-      await _showUploadConfirmation(detectedCategory);
-    } catch (e) {
-      setState(() => _isUploading = false);
-      _showErrorDialog('Error', 'Failed to process image: ${e.toString()}');
+    if (response.statusCode != 200) {
+      _showErrorDialog('Server Error', 'Unable to process image.');
+      return;
     }
+
+    final resBody = response.body;
+    final Map<String, dynamic> resJson = resBody.isNotEmpty ? Map<String, dynamic>.from(json.decode(resBody)) : {};
+
+    if (resJson['valid'] == false) {
+      _showErrorDialog('Invalid image', resJson['reason'] ?? 'Unknown error');
+      return;
+    }
+
+    // Backend returned valid, pre-select category from backend
+    final backendCategory = resJson['category'] ?? 'shirts';
+
+    await _showUploadConfirmation(_capitalizeCategory(backendCategory));
+  } catch (e) {
+    setState(() => _isUploading = false);
+    _showErrorDialog('Error', 'Failed to process image: ${e.toString()}');
   }
+}
+
+String _capitalizeCategory(String category) {
+  // Optionally beautify category names
+  if (category.isEmpty) return category;
+  return category[0].toUpperCase() + category.substring(1);
+}
 
   Future<bool> _isImageBlurry(File imageFile) async {
     try {
@@ -558,37 +575,49 @@ Widget _buildWardrobeGridItem(Map<String, dynamic> item) {
   }
 
   Future<void> _uploadWardrobeItem(String category, String color, String pattern) async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null || _selectedImage == null) return;
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || _selectedImage == null) return;
 
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('wardrobe/${user.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg');
-      
-      await ref.putFile(_selectedImage!);
-      final imageUrl = await ref.getDownloadURL();
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('wardrobe/${user.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg');
+    
+    await ref.putFile(_selectedImage!);
+    final imageUrl = await ref.getDownloadURL();
 
-      setState(() {
-        _wardrobeItems.insert(0, {
-          'imageUrl': imageUrl,
-          'category': category,
-          'color': color,
-          'pattern': pattern,
-          'uploadDate': DateTime.now().toString().split(' ')[0]
-        });
-        _isUploading = false;
+    // Save to Firestore under users/userId/wardrobe
+    final firestore = FirebaseFirestore.instance;
+    await firestore
+      .collection('users')
+      .doc(user.uid)
+      .collection('wardrobe')
+      .add({
+        'imageUrl': imageUrl,
+        'category': category,
+        'color': color,
+        'pattern': pattern,
+        'uploadDate': DateTime.now().toIso8601String(),
       });
 
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Item added to wardrobe!')));
-      
-    } catch (e) {
-      setState(() => _isUploading = false);
-      _showErrorDialog('Upload failed', 'Failed to upload item: ${e.toString()}');
-    }
+    setState(() {
+      _wardrobeItems.insert(0, {
+        'imageUrl': imageUrl,
+        'category': category,
+        'color': color,
+        'pattern': pattern,
+        'uploadDate': DateTime.now().toString().split(' ')[0]
+      });
+      _isUploading = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Item added to wardrobe!')));
+  } catch (e) {
+    setState(() => _isUploading = false);
+    _showErrorDialog('Upload failed', 'Failed to upload item: ${e.toString()}');
   }
+}
 
   void _showItemDetails(Map<String, dynamic> item) {
     showModalBottomSheet(

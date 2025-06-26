@@ -125,6 +125,7 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
 
     } catch (e) {
       setState(() => _isAnalyzing = false);
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error analyzing image: ${e.toString()}')),
       );
@@ -277,6 +278,7 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
           ],
         ),
         const SizedBox(height: 12),
+        // ignore: deprecated_member_use
         Text('Recommended for $_bodyType body type:', style: TextStyle(color: Colors.white.withOpacity(0.8))),
         const SizedBox(height: 12),
         SingleChildScrollView(
@@ -287,7 +289,9 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
                 padding: const EdgeInsets.only(right: 12),
                 child: Chip(
                   label: Text(outfit, style: TextStyle(color: AppColors.cardBackgroundColor)),
+                  // ignore: deprecated_member_use
                   backgroundColor: AppColors.primary.withOpacity(0.2),
+                  // ignore: deprecated_member_use
                   side: BorderSide(color: AppColors.primary.withOpacity(0.5)),
                 ),
               );
@@ -322,6 +326,7 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
                     child: Container(
                       width: MediaQuery.of(context).size.width - 48,
                       height: 2,
+                      // ignore: deprecated_member_use
                       color: AppColors.primary.withOpacity(0.7),
                     ),
                   ),
@@ -415,6 +420,7 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
+            // ignore: deprecated_member_use
             colors: [Colors.black.withOpacity(0.7), Colors.transparent],
           ),
         ),
@@ -455,6 +461,7 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
         const SizedBox(height: 8),
         Text(
           style,
+          // ignore: deprecated_member_use
           style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,

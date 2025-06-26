@@ -52,6 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       if (mounted) {
         Navigator.pushReplacement(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute(builder: (_) => PageWrapper()),
         );
@@ -87,6 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (mounted) {
         Navigator.pushReplacement(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute(builder: (_) => PageWrapper()),
         );
@@ -133,6 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (mounted) {
         Navigator.pushReplacement(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute(builder: (_) => PageWrapper()),
         );
@@ -196,9 +199,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
+                        // ignore: deprecated_member_use
                         color: AppColors.samiDarkColor.withOpacity(0.4),
                         boxShadow: [
                           BoxShadow(
+                            // ignore: deprecated_member_use
                             color: AppColors.samiDarkColor.withOpacity(0),
                             blurRadius: 10,
                           ),

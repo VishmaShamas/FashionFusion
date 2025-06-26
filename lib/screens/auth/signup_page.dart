@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fashion_fusion/constants/colors.dart';
 import 'package:fashion_fusion/screens/auth/login_page.dart';
-import 'package:fashion_fusion/services/auth_service.dart';
 import 'package:fashion_fusion/widgets/button/primary_button.dart';
 import 'package:fashion_fusion/widgets/text/custom_rich_text.dart';
 import 'package:fashion_fusion/widgets/text/primary_text_form_field.dart';
@@ -35,35 +34,40 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   final List<Map<String, String>> bodyTypes = [
     {
-      'label': 'Ectomorph',
-      'image': 'assets/bodyType/ecto.jpg',
-      'desc': 'Lean & slender physique',
+      'label': 'Straight Frame',
+      'image': 'assets/bodyType/body1.png',
+      'desc': 'Equal shoulders, waist, and hips.',
     },
     {
-      'label': 'Mesomorph',
-      'image': 'assets/bodyType/meso.jpg',
-      'desc': 'Athletic build, easy muscle gain',
+      'label': 'V-Shape Build',
+      'image': 'assets/bodyType/body2.png',
+      'desc': 'Broad shoulders, narrow waistline below.',
     },
     {
-      'label': 'Endomorph',
-      'image': 'assets/bodyType/endo.jpg',
-      'desc': 'Stocky build, slower metabolism',
+      'label': 'Round Body',
+      'image': 'assets/bodyType/body3.png',
+      'desc': 'Softer belly with wider torso.',
     },
     {
-      'label': 'Rectangle',
-      'image': 'assets/bodyType/rectangle.jpg',
-      'desc': 'Shoulders & hips same width, no defined waist.',
+      'label': 'Fit & Toned',
+      'image': 'assets/bodyType/body4.png',
+      'desc': 'Lean body with visible muscle.',
     },
     {
-      'label': 'Triangle',
-      'image': 'assets/bodyType/triangle.jpg',
-      'desc': 'Hips wider than shoulders, sloping shoulders.',
+      'label': 'Compact Build',
+      'image': 'assets/bodyType/body5.png',
+      'desc': 'Short, thick, strong-looking frame.',
     },
     {
-      'label': 'Oval',
-      'image': 'assets/bodyType/oval.jpg',
-      'desc': 'Larger midsection, rounder body shape.',
+      'label': 'Slim Soft',
+      'image': 'assets/bodyType/body6.png',
+      'desc': 'Thin frame with less muscle tone.',
     },
+    {
+      'label': 'Balanced Shape ',
+      'image': 'assets/bodyType/body7.png',
+      'desc': 'Broad top, defined lower waist.',
+    }
   ];
 
   @override
@@ -132,22 +136,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
         return;
       }
 
-      final userCredential = await FirebaseAuth.instance
+      await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
 
-      final uid = userCredential.user?.uid;
 
-      if (uid != null) {
-        // Create Firestore user document
-        await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      // Create Firestore user document
+      await FirebaseFirestore.instance.collection('users').doc(email).set({
           'name': name,
           'email': email,
-          'bodyTypeIndex': selectedBodyTypeIndex,
+          'bodyType': bodyTypes[selectedBodyTypeIndex]['label'],
           'wardrobe': [],
-          'likedProds': [],
+          'preferences': [],
           'createdAt': FieldValue.serverTimestamp(),
         });
-      }
 
       if (mounted) {
         Navigator.pushReplacement(
@@ -201,6 +202,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
+                      // ignore: deprecated_member_use
                       color: AppColors.samiDarkColor.withOpacity(0.4),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -350,6 +352,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                                 ),
                                                 child: Container(
                                                   color: Colors.black
+                                                      // ignore: deprecated_member_use
                                                       .withOpacity(0.1),
                                                 ),
                                               ),

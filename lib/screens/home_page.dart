@@ -1,11 +1,10 @@
-import 'dart:convert';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fashion_fusion/constants/colors.dart';
-import 'package:fashion_fusion/liked_products_manager.dart';
-import 'package:fashion_fusion/screens/product_detail.dart';
 import 'package:fashion_fusion/screens/recommendation.dart';
+import 'package:fashion_fusion/widgets/cards/product_card.dart';
+import 'package:fashion_fusion/widgets/ui/loader.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,31 +16,31 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late Future<List<dynamic>> _productFuture;
   final List<Map<String, String>> _trendingStyles = [
-  {
-    'title': 'Streetwear Essentials',
-    'image': 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    'title': 'Minimalist Business',
-    'image': 'https://images.unsplash.com/photo-1623880840102-7df0a9f3545b?q=80&w=464&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-  },
-  {
-    'title': 'Athleisure Vibes',
-    'image': 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    'title': 'Urban Utility',
-    'image': 'https://images.unsplash.com/photo-1551232864-3f0890e580d9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    'title': 'Retro Sportswear',
-    'image': 'https://images.unsplash.com/photo-1617127368498-fb9c48e2d7db?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    'title': 'Korean Street Style',
-    'image': 'https://images.unsplash.com/photo-1636471050641-08976fbbd83e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-  },
-];
+    {
+      'title': 'Streetwear Essentials',
+      'image': 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      'title': 'Minimalist Business',
+      'image': 'https://images.unsplash.com/photo-1623880840102-7df0a9f3545b?q=80&w=464&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    },
+    {
+      'title': 'Athleisure Vibes',
+      'image': 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      'title': 'Urban Utility',
+      'image': 'https://images.unsplash.com/photo-1551232864-3f0890e580d9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      'title': 'Retro Sportswear',
+      'image': 'https://images.unsplash.com/photo-1617127368498-fb9c48e2d7db?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+    },
+    {
+      'title': 'Korean Street Style',
+      'image': 'https://images.unsplash.com/photo-1636471050641-08976fbbd83e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+    },
+  ];
 
   @override
   void initState() {
@@ -49,10 +48,18 @@ class _HomePageState extends State<HomePage> {
     _productFuture = _loadProducts();
   }
 
-  Future<List<dynamic>> _loadProducts() async {
-    final String response = await rootBundle.loadString('data/data.json');
-    return json.decode(response);
+  Future<List<Map<String, dynamic>>> _loadProducts() async {
+  try {
+    final snapshot = await FirebaseFirestore.instance.collection('new_arrivals').get();
+    return snapshot.docs.map((doc) => doc.data()).toList();
+  } catch (e) {
+    if (kDebugMode) {
+      print('Error fetching new arrivals: $e');
+    }
+    return [];
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -84,8 +91,7 @@ class _HomePageState extends State<HomePage> {
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        // ignore: deprecated_member_use
-                        AppColors.darkScaffoldColor.withOpacity(0.7),
+                        AppColors.darkScaffoldColor.withValues(alpha: 0.7),
                         Colors.transparent
                       ],
                     ),
@@ -132,8 +138,7 @@ class _HomePageState extends State<HomePage> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          // ignore: deprecated_member_use
-                          color: AppColors.primary.withOpacity(0.18),
+                          color: AppColors.primary.withValues(alpha: 0.18),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -222,10 +227,7 @@ class _HomePageState extends State<HomePage> {
                 future: _productFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ));
+                    return const CustomLoadingAnimation(); // Replaced with your custom loader
                   }
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return Center(
@@ -234,22 +236,21 @@ class _HomePageState extends State<HomePage> {
                   }
                   final products = snapshot.data!;
                   return GridView.builder(
-  shrinkWrap: true,
-  physics: const NeverScrollableScrollPhysics(),
-  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-    crossAxisCount: 2,
-    childAspectRatio: 0.65,
-    crossAxisSpacing: 16,
-    mainAxisSpacing: 16,
-  ),
-  padding: const EdgeInsets.symmetric(horizontal: 20),
-  itemCount: products.take(10).length, // Limit to first 10 products
-  itemBuilder: (context, i) {
-    final product = products[i];
-    return _ProductGridCard(product: product);
-  },
-);
-
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.63,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: products.take(10).length,
+                    itemBuilder: (context, i) {
+                      final product = products[i];
+                      return ProductCard(product: product, parentContext: context);
+                    },
+                  );
                 },
               ),
               const SizedBox(height: 24),
@@ -274,8 +275,7 @@ class _TrendingStyleCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            // ignore: deprecated_member_use
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),
@@ -315,115 +315,3 @@ class _TrendingStyleCard extends StatelessWidget {
   }
 }
 
-class _ProductGridCard extends StatelessWidget {
-  final Map<String, dynamic> product;
-  const _ProductGridCard({required this.product});
-
-  @override
-  Widget build(BuildContext context) {
-    final likedManager = LikedProductsManager();
-
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => ProductDetailPage(product: product)),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.cardBackgroundColor,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-              child: SizedBox(
-                height: 120,
-                width: double.infinity,
-                child: Image.network(
-                  product['image'] ?? '',
-                  fit: BoxFit.scaleDown,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.broken_image, size: 50, color: Colors.white24),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
-              child: Text(
-                product['title'] ?? '',
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                product['brand'] ?? '',
-                style: TextStyle(
-                  color: AppColors.textSecondaryColor,
-                  fontSize: 11,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            // const Spacer(),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Rs. ${product['price']}',
-                    style: TextStyle(
-                      color: product['discount_price'] != null ? AppColors.primary : Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                  ),
-                  StatefulBuilder(
-                    builder: (context, setState) {
-                      final bool isLiked = likedManager.isLiked(product);
-                      return IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: Icon(
-                          isLiked ? Icons.favorite : Icons.favorite_border,
-                          color: isLiked ? Colors.red : Colors.black,
-                          size: 18,
-                        ),
-                        onPressed: () {
-                          if (isLiked) {
-                            likedManager.unlikeProduct(product);
-                          } else {
-                            likedManager.likeProduct(product);
-                          }
-                          setState(() {});
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 1),
-          ],
-        ),
-      ),
-    );
-  }
-}
