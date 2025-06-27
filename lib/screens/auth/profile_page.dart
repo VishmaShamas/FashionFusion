@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fashion_fusion/constants/colors.dart';
+import 'package:fashion_fusion/screens/liked_products.dart';
+import 'package:fashion_fusion/screens/wardrobe_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fashion_fusion/screens/auth/login_page.dart';
@@ -69,6 +71,64 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<User?> _getCurrentUser() async {
     return FirebaseAuth.instance.currentUser;
+  }
+
+Widget _buildBodyTypeSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text('Body Type: ', style: TextStyle(color: Colors.white, fontSize: 16)),
+            Text(userData!['bodyType'], style: TextStyle(color: AppColors.primary, fontSize: 16, fontWeight: FontWeight.bold)),
+            const Spacer(),
+            IconButton(
+              icon: const Icon(Icons.accessibility_new_rounded, color: Colors.white70),
+              onPressed: _showBodyTypeSelector,
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // ignore: deprecated_member_use
+        Text('Recommended for ${userData!['bodyType']} body type:', style: TextStyle(color: Colors.white.withOpacity(0.8))),
+        const SizedBox(height: 12),
+      ],
+    );
+  }
+
+void _showBodyTypeSelector() {
+    final bodyTypes = ['Athletic', 'Slim', 'Muscular', 'Stocky'];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.samiDarkColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Select Your Body Type',
+                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            ...bodyTypes.map((type) {
+              return ListTile(
+                title: Text(type, style: const TextStyle(color: Colors.white)),
+                trailing: userData!['bodyType'] == type
+                    ? Icon(Icons.check, color: AppColors.primary)
+                    : null,
+                onTap: () {
+                  _changeBodyType(type);
+                  Navigator.pop(context);
+                },
+              );
+            }),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -185,15 +245,17 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 40),
                 // _buildTrendingStyles(),
                 // const SizedBox(height: 32),
-                _buildSectionTitle("Your Style Preferences"),
+                _buildSectionTitle("Your Style Preferences", () {}),
                 const SizedBox(height: 16),
                 _buildStylePreferences(),
                 const SizedBox(height: 32),
-                _buildSectionTitle("Your Wardrobe"),
+                _buildSectionTitle("Your Wardrobe", () => {Navigator.push(context, MaterialPageRoute(builder: (context) => WardrobePage()))}),
                 const SizedBox(height: 16),
                 _buildWardrobeCarousel(),
                 const SizedBox(height: 32,),
-                _buildSectionTitle("Liked Items"),
+                _buildSectionTitle("Liked Items", () => {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => LikedProducts()))
+                }),
                 const SizedBox(height: 16),
                 _buildLikedItemsGrid(),
                 const SizedBox(height: 40),
@@ -417,13 +479,13 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, VoidCallback onPressed) {
     return Row(
       children: [
         Text(title, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
         const Spacer(),
         TextButton(
-          onPressed: () {},
+          onPressed: onPressed,
           child: Text("See all", style: TextStyle(color: AppColors.primary, fontSize: 14)),
         ),
       ],
@@ -727,6 +789,19 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
 }
+
+  void _changeBodyType(String type) {
+    // change body tpye in firebase
+    setState(() {
+      _isLoading = true;
+    });
+    final userDoc = FirebaseFirestore.instance.collection('users').doc(user!.email);
+    userDoc.update({'bodyType': type}).then((_) {
+      setState(() {
+        _isLoading = false;
+      });
+    });
+  }
 
 
 }

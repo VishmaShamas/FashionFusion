@@ -1,6 +1,7 @@
+import 'package:fashion_fusion/screens/product_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:fashion_fusion/constants/colors.dart';
-import 'package:fashion_fusion/screens/product_detail.dart';
+
 
 class ProductCard extends StatelessWidget {
   final Map<String, dynamic>? product;
@@ -27,6 +28,8 @@ class ProductCard extends StatelessWidget {
       );
     }
 
+    final priceWidget = _buildPriceWidget(product!);
+
     return GestureDetector(
       onTap: () => Navigator.push(
         parentContext,
@@ -40,7 +43,7 @@ class ProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withOpacity(0.1),
               blurRadius: 6,
               offset: const Offset(0, 3),
             ),
@@ -55,7 +58,7 @@ class ProductCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(16)),
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: Colors.black.withOpacity(0.1),
                 ),
                 child: product!['image'] != null
                     ? Image.network(
@@ -86,14 +89,19 @@ class ProductCard extends StatelessWidget {
                   Text(
                     product!['brand']?.toString() ?? 'No Brand',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: Colors.white.withOpacity(0.7),
                       fontSize: 12,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 1),
-                  _buildPriceWidget(product!),
+                  // Only show price if present
+                  if (priceWidget != null) ...[
+                    const SizedBox(height: 6),
+                    priceWidget,
+                  ],
+                  // If price is null, the card ends here (shorter card)
                 ],
               ),
             ),
@@ -104,24 +112,35 @@ class ProductCard extends StatelessWidget {
   }
 
   Widget _buildImagePlaceholder() {
-  return const Center(
-    child: Icon(Icons.image_not_supported, 
-      color: Colors.white24, size: 40),
-  );
-}
+    return const Center(
+      child: Icon(Icons.image_not_supported,
+          color: Colors.white24, size: 40),
+    );
+  }
 
-Widget _buildPriceWidget(Map<String, dynamic> product) {
-  final price = product['price']?.toString() ?? 'N/A';
-  final discountPrice = product['discount_price']?.toString();
-  
-  if (discountPrice != null && discountPrice != 'null' && discountPrice != '0' && discountPrice != 'Null') {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildPriceWidget(Map<String, dynamic> product) {
+  final priceRaw = product['price'];
+  final discountRaw = product['discount_price'];
+
+  final price = num.tryParse(priceRaw?.toString() ?? '');
+  final discountPrice = num.tryParse(discountRaw?.toString() ?? '');
+
+  if (price == null) {
+    return const Text(
+      'Prices not available',
+      style: TextStyle(
+        color: Colors.white54, // Grey
+        fontSize: 13,
+        fontWeight: FontWeight.w500,
+      ),
+    );
+  }
+
+  if (discountPrice != null && discountPrice > 0 && discountPrice < price) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
         Text(
           'Rs. $discountPrice',
           style: const TextStyle(
@@ -129,19 +148,19 @@ Widget _buildPriceWidget(Map<String, dynamic> product) {
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
-        ),Text(
+        ),
+        Text(
           'Rs. $price',
           style: const TextStyle(
             color: Colors.white54,
             decoration: TextDecoration.lineThrough,
             fontSize: 12,
           ),
-        ),],
-        )
+        ),
       ],
     );
   }
-  
+
   return Text(
     'Rs. $price',
     style: const TextStyle(
@@ -150,4 +169,5 @@ Widget _buildPriceWidget(Map<String, dynamic> product) {
       fontWeight: FontWeight.bold,
     ),
   );
-}}
+}
+}

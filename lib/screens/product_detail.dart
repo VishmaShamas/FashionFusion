@@ -64,10 +64,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
     _manager.likeProduct(widget.product);
   }
-
-  setState(() {
-    _isLiked = !_isLiked;
-  });
 }
 
 

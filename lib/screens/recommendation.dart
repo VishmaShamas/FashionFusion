@@ -1,8 +1,11 @@
 import 'dart:io';
+import 'package:fashion_fusion/screens/wardrobe_recommendation_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
-
+import 'package:fashion_fusion/screens/product_recommendation_page.dart';
 import 'package:fashion_fusion/constants/colors.dart';
 
 class PersonalizedRecommendationPage extends StatefulWidget {
@@ -22,32 +25,180 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
   String _bodyType = 'Athletic';
   List<String> _recommendedOutfits = [];
   List<String> _trendingStyles = [];
+  final List<String> validBodyTypes = [
+  'Straight Frame',
+  'V-Shape Build',
+  'Round Body',
+  'Fit & Toned',
+  'Compact Build',
+  'Slim Soft',
+  'Balanced Shape',
+];
+
 
   late final ImageLabeler _labeler;
 
-  final Map<String, List<String>> _bodyTypeOutfits = {
-    'Athletic': [
-      'Fitted T-shirts with Slim Jeans',
-      'Tailored Blazers',
-      'Athleisure Wear'
+  final List<Map<String, String>> bodyTypes = [
+    {
+      'label': 'Straight Frame',
+      'image': 'assets/bodyType/body1.png',
+      'desc' : 'Equal shoulders, waist, and hips.',
+    },
+    {
+      'label': 'V-Shape Build',
+      'image': 'assets/bodyType/body2.png',
+      'desc' : 'Broad shoulders, narrow waistline below.',
+    },
+    {
+      'label': 'Round Body',
+      'image': 'assets/bodyType/body3.png',
+      'desc' : 'Softer belly with wider torso.',
+    },
+    {
+      'label': 'Fit & Toned',
+      'image': 'assets/bodyType/body4.png',
+      'desc' : 'Lean body with visible muscle.',
+    },
+    {
+      'label': 'Compact Build',
+      'image': 'assets/bodyType/body5.png',
+      'desc' : 'Short, thick, strong-looking frame.',
+    },
+    {
+      'label': 'Slim Soft',
+      'image': 'assets/bodyType/body6.png',
+      'desc' : 'Thin frame with less muscle tone.',
+    },
+    {
+      'label': 'Balanced Shape',
+      'image': 'assets/bodyType/body7.png',
+      'desc' : 'Broad top, defined lower waist.',
+    },
+  ];
+
+  
+
+  final Map<String, List<String>> _bodyTypeOutfitSuggestions = {
+    'Straight Frame': [
+      'Tailored double-breasted blazer & straight trousers',
+      'Bomber jacket over crew-neck tee & tapered chinos',
+      'Vertical-stripe button-down & dark denim',
+      'Fitted polo shirt with slim khakis',
+      'Layered denim jacket & knit sweater',
+      'Slim-fit turtleneck & tailored slacks',
+      'Monochromatic navy tee & pants',
+      'Lightweight parka & slim cargo pants',
+      'Denim-on-denim jacket + jeans',
+      'Henley shirt & suede loafers',
+      'Oxford shirt with straight-cut pants',
+      'Trench coat over crew-neck & chinos',
+      'Structured peacoat & slim jeans',
+      'Merino crewneck & tailored shorts',
+      'Blazer + jeans + white sneakers',
     ],
-    'Slim': [
-      'Layered Outfits',
-      'Fitted Sweaters',
-      'Straight-leg Pants'
+    'V-Shape Build': [
+      'Fitted v-neck tee & slim joggers',
+      'Athletic-cut polo & tapered chinos',
+      'Wool blazer with narrow lapels & slim pants',
+      'Crewneck sweater & drop-shoulder coat',
+      'Bomber jacket & slim cargo pants',
+      'Henley shirt under denim jacket',
+      'Muscle-fit tank & athletic track pants',
+      'Structured peacoat & straight jeans',
+      'Slim-fit hoodie & tapered sweats',
+      'Denim jacket & slim khakis',
+      'Leather biker jacket & fitted jeans',
+      'Textured knit sweater & cords',
+      'Lightweight windbreaker & joggers',
+      'Tailored suit with narrow tie',
+      'Puffer vest over long-sleeve tee',
     ],
-    'Muscular': [
-      'Stretch-fit Shirts',
-      'Relaxed Fit Jeans',
-      'V-neck T-shirts'
+    'Round Body': [
+      'Vertical-stripe shirt & dark jeans',
+      'Single-breasted blazer & V-neck tee',
+      'Layered open cardigan & slim pants',
+      'Longline bomber & straight chinos',
+      'Unstructured blazer & crew-neck T',
+      'Henley shirt & dark wash denim',
+      'Monochrome dark outfit',
+      'Lightweight trench & slim-cut trousers',
+      'Textured sweater & vertical-pattern pants',
+      'Denim jacket & black jeans',
+      'V-neck sweater layered under coat',
+      'Slim joggers & structured jacket',
+      'Tailored overcoat & tapered pants',
+      'Streamlined leather jacket & jeans',
+      'Soft-weave cardigan & straight pants',
     ],
-    'Stocky': [
-      'Dark Colored Outfits',
-      'Vertical Stripes',
-      'Single-breasted Jackets'
+    'Fit & Toned': [
+      'Fitted crew-neck tee & skinny jeans',
+      'Muscle-fit tank & slim joggers',
+      'Cropped denim jacket & tailored pants',
+      'Slim-cut suit with narrow lapels',
+      'Athleisure hoodie & technical joggers',
+      'Henley shirt & stretch chinos',
+      'Leather moto jacket & tapered jeans',
+      'Bomber jacket & slim cargos',
+      'Fitted polo & tailored shorts',
+      'Lightweight windbreaker & joggers',
+      'V-neck tee & ripped skinny denim',
+      'Denim vest over tee & jeans',
+      'Structured blazer & slim dress pants',
+      'Athletic cut polo & track pants',
+      'Layered open shirt & stretch jeans',
+    ],
+    'Compact Build': [
+      'Button-down shirt & tapered chinos',
+      'Short bomber jacket & slim jeans',
+      'Structured blazer & straight trousers',
+      'Crew-neck sweater & slim cords',
+      'Denim jacket & fitted pants',
+      'Fitted polo & tailored shorts',
+      'Textured knit jumper & joggers',
+      'Henley shirt & slim cargos',
+      'Lightweight parka & skinny jeans',
+      'Monochrome grey look',
+      'Leather biker jacket & slim denim',
+      'Tailored vest & tapered slacks',
+      'Unstructured coat & straight chinos',
+      'Merino crewneck & fitted jeans',
+      'Slim-leg suit & casual sneakers',
+    ],
+    'Slim Soft': [
+      'Layered lightweight jacket & hoodie',
+      'Overshirt over tee & straight jeans',
+      'Textured knit sweater & chinos',
+      'Henley shirt layered with vest',
+      'Denim jacket & relaxed-fit pants',
+      'Crew-neck tee & slim joggers',
+      'Soft wool blazer & straight slacks',
+      'Patterned shirt & dark denim',
+      'Light trench coat & slim chinos',
+      'Bomber jacket & casual trousers',
+      'Fitted vest over open shirt',
+      'Cable-knit sweater & jeans',
+      'Tailored cardigan & straight pants',
+      'Monochrome beige outfit',
+      'Unstructured overshirt & joggers',
+    ],
+    'Balanced Shape': [
+      'Structured blazer & straight trousers',
+      'Button-down shirt & slim chinos',
+      'V-neck sweater layered under coat',
+      'Denim jacket & dark wash jeans',
+      'Crew-neck tee & tailored shorts',
+      'Textured blazer & tapered pants',
+      'Bomber jacket over tee & joggers',
+      'Henley shirt & slim denim',
+      'Lightweight parka & slim cargos',
+      'Monochrome navy look',
+      'Tailored overcoat & straight jeans',
+      'Leather moto jacket & fitted pants',
+      'Patterned shirt & solid trousers',
+      'Merino wool crewneck & cords',
+      'Unstructured coat & slim chinos',
     ],
   };
-
   final List<String> _trendingOutfits = [
     'Monochromatic Streetwear',
     'Retro Sportswear',
@@ -72,7 +223,7 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
 
   void _loadTrendingStyles() {
     setState(() {
-      _trendingStyles = [...?_bodyTypeOutfits[_bodyType], ..._trendingOutfits];
+      _trendingStyles = [...?_bodyTypeOutfitSuggestions[_bodyType], ..._trendingOutfits];
     });
   }
 
@@ -186,6 +337,14 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
         'Complementary colors'
       ];
     });
+    List<Map<String, dynamic>> recommendedList = [];
+    Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (_) => WardrobeRecommendationPage(items: recommendedList),
+  ),
+);
+
   }
 
   void _findSimilarProducts() {
@@ -196,6 +355,14 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
         'Trending items matching your style'
       ];
     });
+    List<Map<String, dynamic>> myProductList = [];
+    Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (_) => ProductRecommendationPage(products: myProductList),
+  ),
+);
+
   }
 
   @override
@@ -224,7 +391,7 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
           ),
           if (_selectedImage != null) _buildImageAnalysisSection(),
           if (_recommendedOutfits.isNotEmpty) _buildRecommendedOutfits(),
-          _buildTrendingStylesSection(),
+          // _buildTrendingStylesSection(),
         ],
       ),
     );
@@ -284,7 +451,7 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
-            children: _bodyTypeOutfits[_bodyType]!.map((outfit) {
+            children: _bodyTypeOutfitSuggestions[_bodyType]!.map((outfit) {
               return Padding(
                 padding: const EdgeInsets.only(right: 12),
                 child: Chip(
@@ -375,33 +542,33 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
     );
   }
 
-  SliverToBoxAdapter _buildTrendingStylesSection() {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Trending Styles for You',
-                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 220,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _trendingStyles.length,
-                itemBuilder: (context, index) => Container(
-                  width: 160,
-                  margin: const EdgeInsets.only(right: 16),
-                  child: _buildTrendingStyleCard(_trendingStyles[index]),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // SliverToBoxAdapter _buildTrendingStylesSection() {
+  //   return SliverToBoxAdapter(
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(24),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           const Text('Trending Styles for You',
+  //               style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+  //           const SizedBox(height: 12),
+  //           SizedBox(
+  //             height: 220,
+  //             child: ListView.builder(
+  //               scrollDirection: Axis.horizontal,
+  //               itemCount: _trendingStyles.length,
+  //               itemBuilder: (context, index) => Container(
+  //                 width: 160,
+  //                 margin: const EdgeInsets.only(right: 16),
+  //                 child: _buildTrendingStyleCard(_trendingStyles[index]),
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildOutfitCard(String outfit) {
     return Container(
