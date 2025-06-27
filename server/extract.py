@@ -8,18 +8,18 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "./service.json"
 db = firestore.Client()
 
 # Load JSON data
-data_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'data', 'data2.json')
+data_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'data', 'new.json')
 print("Looking for JSON at:", os.path.abspath(data_path))
 
 with open(data_path, 'r', encoding='utf-8') as f:
     product_list = json.load(f)
 
 # Firestore collection
-collection_name = 'products'
+collection_name = 'new_arrivals'
 
 # Upload from 14000th to 17000th product (list index 13999 to 16999)
-start_index = 12000
-end_index = 13000  # not inclusive in Python
+start_index = 0
+end_index = 50  # not inclusive in Python
 
 for i in range(start_index, end_index):
     if i >= len(product_list):

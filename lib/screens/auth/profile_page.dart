@@ -43,8 +43,10 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() {
       _isLoading = true;
     });
-    
-    final userDoc = FirebaseFirestore.instance.collection('users').doc(user!.email);
+
+    final userDoc = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.email);
 
     final docSnapshot = await userDoc.get();
     if (docSnapshot.exists) {
@@ -52,16 +54,22 @@ class _ProfilePageState extends State<ProfilePage> {
     }
 
     // Fetch wardrobe
-    final wardrobeSnapshot = await userDoc.collection('wardrobe').limit(10).get();
+    final wardrobeSnapshot =
+        await userDoc.collection('wardrobe').limit(10).get();
     wardrobe = wardrobeSnapshot.docs.map((doc) => doc.data()).toList();
 
     // Fetch liked products
-    final likedSnapshot = await userDoc.collection('likedProducts').limit(10).get();
+    final likedSnapshot =
+        await userDoc.collection('likedProducts').limit(10).get();
     likedProducts = likedSnapshot.docs.map((doc) => doc.data()).toList();
 
     // Fetch preferences
-    final prefSnapshot = await userDoc.collection('preferences').limit(10).get();
-    preferences = prefSnapshot.docs.map((doc) => doc.data()).toList(); // Assuming doc ID is preference name
+    final prefSnapshot =
+        await userDoc.collection('preferences').limit(10).get();
+    preferences =
+        prefSnapshot.docs
+            .map((doc) => doc.data())
+            .toList(); // Assuming doc ID is preference name
 
     setState(() {
       _isLoading = false;
@@ -72,30 +80,46 @@ class _ProfilePageState extends State<ProfilePage> {
     return FirebaseAuth.instance.currentUser;
   }
 
-Widget _buildBodyTypeSection() {
+  Widget _buildBodyTypeSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Text('Body Type: ', style: TextStyle(color: Colors.white, fontSize: 16)),
-            Text(userData!['bodyType'], style: TextStyle(color: AppColors.primary, fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text(
+              'Body Type: ',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+            Text(
+              userData!['bodyType'],
+              style: TextStyle(
+                color: AppColors.primary,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const Spacer(),
             IconButton(
-              icon: const Icon(Icons.accessibility_new_rounded, color: Colors.white70),
+              icon: const Icon(
+                Icons.accessibility_new_rounded,
+                color: Colors.white70,
+              ),
               onPressed: _showBodyTypeSelector,
             ),
           ],
         ),
         const SizedBox(height: 12),
         // ignore: deprecated_member_use
-        Text('Recommended for ${userData!['bodyType']} body type:', style: TextStyle(color: Colors.white.withOpacity(0.8))),
+        Text(
+          'Recommended for ${userData!['bodyType']} body type:',
+          style: TextStyle(color: Colors.white.withOpacity(0.8)),
+        ),
         const SizedBox(height: 12),
       ],
     );
   }
 
-void _showBodyTypeSelector() {
+  void _showBodyTypeSelector() {
     final bodyTypes = ['Athletic', 'Slim', 'Muscular', 'Stocky'];
 
     showModalBottomSheet(
@@ -104,29 +128,40 @@ void _showBodyTypeSelector() {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Select Your Body Type',
-                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            ...bodyTypes.map((type) {
-              return ListTile(
-                title: Text(type, style: const TextStyle(color: Colors.white)),
-                trailing: userData!['bodyType'] == type
-                    ? Icon(Icons.check, color: AppColors.primary)
-                    : null,
-                onTap: () {
-                  _changeBodyType(type);
-                  Navigator.pop(context);
-                },
-              );
-            }),
-          ],
-        ),
-      ),
+      builder:
+          (context) => Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Select Your Body Type',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ...bodyTypes.map((type) {
+                  return ListTile(
+                    title: Text(
+                      type,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    trailing:
+                        userData!['bodyType'] == type
+                            ? Icon(Icons.check, color: AppColors.primary)
+                            : null,
+                    onTap: () {
+                      _changeBodyType(type);
+                      Navigator.pop(context);
+                    },
+                  );
+                }),
+              ],
+            ),
+          ),
     );
   }
 
@@ -157,27 +192,50 @@ void _showBodyTypeSelector() {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.account_circle, size: 100, color: Colors.white.withOpacity(0.7)),
+          Icon(
+            Icons.account_circle,
+            size: 100,
+            color: Colors.white.withOpacity(0.7),
+          ),
           const SizedBox(height: 24),
-          const Text('Welcome to Fashion Fusion',
-              style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+          const Text(
+            'Welcome to Fashion Fusion',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text('Sign in to access your profile and wardrobe',
-              style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16)),
+          Text(
+            'Sign in to access your profile and wardrobe',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 16,
+            ),
+          ),
           const SizedBox(height: 32),
           ElevatedButton(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
               elevation: 4,
               shadowColor: AppColors.primary.withOpacity(0.3),
             ),
-            child: const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            child: const Text(
+              'Sign In',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
           ).animate().fadeIn().scale(),
         ],
       ),
@@ -188,7 +246,7 @@ void _showBodyTypeSelector() {
     if (_isLoading) {
       return const Center(child: CustomLoadingAnimation());
     }
-    
+
     return CustomScrollView(
       slivers: [
         SliverAppBar(
@@ -199,7 +257,10 @@ void _showBodyTypeSelector() {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [AppColors.primary.withOpacity(0.8), AppColors.darkScaffoldColor],
+                  colors: [
+                    AppColors.primary.withOpacity(0.8),
+                    AppColors.darkScaffoldColor,
+                  ],
                 ),
               ),
               child: Center(
@@ -210,13 +271,15 @@ void _showBodyTypeSelector() {
                     GestureDetector(
                       onTap: _editProfile,
                       child: Hero(
-  tag: 'profile-avatar',
-  child:  CircleAvatar(
-    radius: 50,
-    backgroundColor: AppColors.samiDarkColor,
-    child: Icon(Icons.person, size: 48, color: Colors.white70),
-  ),
-),
+                        tag: 'profile-avatar',
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundImage: AssetImage(
+                            'assets/avatar/avatar.png',
+                          ),
+                          backgroundColor: Colors.transparent,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -229,11 +292,22 @@ void _showBodyTypeSelector() {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Column(
               children: [
-                Text(userData?['name'] ?? '',
-                    style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                Text(
+                  userData?['name'] ?? '',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Text(userData?['email'] ?? '',
-                    style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16)),
+                Text(
+                  userData?['email'] ?? '',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 16,
+                  ),
+                ),
                 const SizedBox(height: 24),
                 _buildStatsRow(),
                 const SizedBox(height: 32),
@@ -245,12 +319,20 @@ void _showBodyTypeSelector() {
                 const SizedBox(height: 16),
                 _buildStylePreferences(),
                 const SizedBox(height: 32),
-                _buildSectionTitle("Your Wardrobe", () {Navigator.push(context, MaterialPageRoute(builder: (context) => WardrobePage()));}),
+                _buildSectionTitle("Your Wardrobe", () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => WardrobePage()),
+                  );
+                }),
                 const SizedBox(height: 16),
                 _buildWardrobeCarousel(),
-                const SizedBox(height: 32,),
+                const SizedBox(height: 32),
                 _buildSectionTitle("Liked Items", () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => LikedProducts()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LikedProducts()),
+                  );
                 }),
                 const SizedBox(height: 16),
                 _buildLikedItemsGrid(),
@@ -267,22 +349,26 @@ void _showBodyTypeSelector() {
     final List<Map<String, dynamic>> trendingStyles = [
       {
         'title': 'Streetwear Essentials',
-        'image': 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+        'image':
+            'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
         'likes': '1.2k',
       },
       {
         'title': 'Minimalist Business',
-        'image': 'https://images.unsplash.com/photo-1539533018447-63fcce2678e4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+        'image':
+            'https://images.unsplash.com/photo-1539533018447-63fcce2678e4?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
         'likes': '856',
       },
       {
         'title': 'Athleisure Vibes',
-        'image': 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+        'image':
+            'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
         'likes': '1.5k',
       },
       {
         'title': 'Urban Utility',
-        'image': 'https://images.unsplash.com/photo-1551232864-3f0890e580d9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+        'image':
+            'https://images.unsplash.com/photo-1551232864-3f0890e580d9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
         'likes': '932',
       },
     ];
@@ -353,10 +439,7 @@ void _showBodyTypeSelector() {
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.7),
-                      Colors.transparent,
-                    ],
+                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
                   ),
                 ),
                 child: Align(
@@ -365,7 +448,11 @@ void _showBodyTypeSelector() {
                     padding: const EdgeInsets.all(12),
                     child: Row(
                       children: [
-                        const Icon(Icons.favorite_border, color: Colors.white, size: 16),
+                        const Icon(
+                          Icons.favorite_border,
+                          color: Colors.white,
+                          size: 16,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           style['likes'],
@@ -425,10 +512,19 @@ void _showBodyTypeSelector() {
   Widget _buildStatItem(String value, String label) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 4),
-        Text(label,
-            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14)),
+        Text(
+          label,
+          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14),
+        ),
       ],
     );
   }
@@ -478,11 +574,21 @@ void _showBodyTypeSelector() {
   Widget _buildSectionTitle(String title, VoidCallback onPressed) {
     return Row(
       children: [
-        Text(title, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+        Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const Spacer(),
         TextButton(
           onPressed: onPressed,
-          child: Text("See all", style: TextStyle(color: AppColors.primary, fontSize: 14)),
+          child: Text(
+            "See all",
+            style: TextStyle(color: AppColors.primary, fontSize: 14),
+          ),
         ),
       ],
     );
@@ -496,15 +602,18 @@ void _showBodyTypeSelector() {
     return Wrap(
       spacing: 12,
       runSpacing: 12,
-      children: preferences.map((pref) {
-        return Chip(
-          avatar: Icon(Icons.style, size: 18, color: Colors.white),
-          label: Text(pref, style: const TextStyle(color: Colors.white)),
-          backgroundColor: AppColors.primary.withOpacity(0.2),
-          side: BorderSide(color: AppColors.primary.withOpacity(0.5)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        );
-      }).toList(),
+      children:
+          preferences.map((pref) {
+            return Chip(
+              avatar: Icon(Icons.style, size: 18, color: Colors.white),
+              label: Text(pref, style: const TextStyle(color: Colors.white)),
+              backgroundColor: AppColors.primary.withOpacity(0.2),
+              side: BorderSide(color: AppColors.primary.withOpacity(0.5)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            );
+          }).toList(),
     );
   }
 
@@ -563,10 +672,12 @@ void _showBodyTypeSelector() {
       ),
     );
   }
+
   Future<void> _editProfile() async {
     final nameController = TextEditingController(text: user?.displayName ?? '');
     nameController.addListener(() {
-      final changedName = nameController.text.trim() != (user?.displayName ?? '');
+      final changedName =
+          nameController.text.trim() != (user?.displayName ?? '');
       setState(() {
         _hasChanges = changedName || _selectedImage != null;
       });
@@ -579,105 +690,126 @@ void _showBodyTypeSelector() {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          top: 24,
-          left: 24,
-          right: 24,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text("Edit Profile", style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            GestureDetector(
-              onTap: _pickImage,
-              child: CircleAvatar(
-  radius: 40,
-  backgroundColor: AppColors.samiDarkColor,
-  child: const Icon(Icons.camera_alt, color: Colors.white70),
-),
-
+      builder:
+          (context) => Padding(
+            padding: EdgeInsets.only(
+              top: 24,
+              left: 24,
+              right: 24,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: nameController,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                labelStyle: TextStyle(color: Colors.white70),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white30),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Edit Profile",
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                const SizedBox(height: 16),
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: CircleAvatar(
+                    radius: 40,
+                    backgroundColor: AppColors.samiDarkColor,
+                    child: const Icon(Icons.camera_alt, color: Colors.white70),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: nameController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    labelStyle: TextStyle(color: Colors.white70),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white30),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed:
+                      !_hasChanges || _isSaving
+                          ? null
+                          : () async {
+                            setState(() {
+                              _isSaving = true;
+                            });
+
+                            final newName = nameController.text.trim();
+                            String? imageUrl;
+
+                            final updates = <String, dynamic>{};
+
+                            if (newName.isNotEmpty &&
+                                newName != user!.displayName) {
+                              await user!.updateDisplayName(newName);
+                              updates['name'] = newName;
+                            }
+
+                            await user!.reload();
+                            user = FirebaseAuth.instance.currentUser;
+
+                            if (updates.isNotEmpty) {
+                              updates['email'] = user!.email;
+                              final userRef = FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(user!.uid);
+                              await userRef.set(
+                                updates,
+                                SetOptions(merge: true),
+                              );
+                            }
+
+                            setState(() {
+                              _isSaving = false;
+                              _selectedImage = null;
+                              _hasChanges = false;
+                            });
+
+                            if (context.mounted) Navigator.pop(context);
+                          },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 14,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child:
+                      _isSaving
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                          : const Text('Save', style: TextStyle(fontSize: 16)),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: !_hasChanges || _isSaving
-                  ? null
-                  : () async {
-                      setState(() {
-                        _isSaving = true;
-                      });
-
-                      final newName = nameController.text.trim();
-                      String? imageUrl;
-
-                      final updates = <String, dynamic>{};
-
-                      if (newName.isNotEmpty && newName != user!.displayName) {
-                        await user!.updateDisplayName(newName);
-                        updates['name'] = newName;
-                      }
-
-                      await user!.reload();
-                      user = FirebaseAuth.instance.currentUser;
-
-                      if (updates.isNotEmpty) {
-                        updates['email'] = user!.email;
-                        final userRef = FirebaseFirestore.instance.collection('users').doc(user!.uid);
-                        await userRef.set(updates, SetOptions(merge: true));
-                      }
-
-                      setState(() {
-                        _isSaving = false;
-                        _selectedImage = null;
-                        _hasChanges = false;
-                      });
-
-                      if (context.mounted) Navigator.pop(context);
-        },
-  style: ElevatedButton.styleFrom(
-    backgroundColor: AppColors.primary,
-    foregroundColor: Colors.white,
-    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(20),
-    ),
-  ),
-  child: _isSaving
-      ? const SizedBox(
-          height: 20,
-          width: 20,
-          child: CircularProgressIndicator(
-            color: Colors.white,
-            strokeWidth: 2,
           ),
-        )
-      : const Text('Save', style: TextStyle(fontSize: 16)),
-),
-          ],
-        ),
-      ),
     );
   }
 
   Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
     if (pickedFile != null) {
       setState(() {
         _selectedImage = File(pickedFile.path);
@@ -689,21 +821,38 @@ void _showBodyTypeSelector() {
   Future<void> _confirmSignOut() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.samiDarkColor,
-        title: const Text('Sign Out', style: TextStyle(color: Colors.white)),
-        content: const Text('Are you sure you want to sign out?',
-            style: TextStyle(color: Colors.white70)),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sign Out', style: TextStyle(color: Colors.red))),
-        ],
-      ),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: AppColors.samiDarkColor,
+            title: const Text(
+              'Sign Out',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: const Text(
+              'Are you sure you want to sign out?',
+              style: TextStyle(color: Colors.white70),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Sign Out',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
     );
     if (confirmed == true) {
       await FirebaseAuth.instance.signOut();
       if (mounted) {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
       }
     }
   }
@@ -746,7 +895,10 @@ void _showBodyTypeSelector() {
                   padding: const EdgeInsets.all(12),
                   child: Text(
                     item['title'] ?? 'Outfit',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -770,20 +922,20 @@ void _showBodyTypeSelector() {
         ),
       ),
     );
-}
+  }
 
   void _changeBodyType(String type) {
     // change body tpye in firebase
     setState(() {
       _isLoading = true;
     });
-    final userDoc = FirebaseFirestore.instance.collection('users').doc(user!.email);
+    final userDoc = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.email);
     userDoc.update({'bodyType': type}).then((_) {
       setState(() {
         _isLoading = false;
       });
     });
   }
-
-
 }

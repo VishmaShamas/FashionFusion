@@ -15,47 +15,48 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late Future<List<dynamic>> _productFuture;
-    final List<Map<String, String>> trendingMensPk = [
+  final List<Map<String, String>> trendingMensPk = [
     {
       'title': 'Pastel Kurta-Pajama',
       'description':
           'Soft powder blues, mints and beiges in breathable cotton/cambric with barely-there embroidery; perfect for summer weddings and Eid.', // :contentReference[oaicite:0]{index=0}
-      'image': 'assets/trend/1.jpg'
+      'image': 'assets/trend/1.jpg',
     },
     {
       'title': 'Overshirt Combo',
-      'description':  'Unstructured linen or linen-blend overshirts worn open over a basic tee, paired with relaxed cotton pants — the “soft tailoring” vibe for humid days.', // :contentReference[oaicite:1]{index=1}
-      'image': 'assets/trend/2.jpg'
+      'description':
+          'Unstructured linen or linen-blend overshirts worn open over a basic tee, paired with relaxed cotton pants — the “soft tailoring” vibe for humid days.', // :contentReference[oaicite:1]{index=1}
+      'image': 'assets/trend/2.jpg',
     },
     {
       'title': 'Denim Kurta Fusion',
       'description':
           'The fusion look: mid-wash denim or chambray kurta worn over jeans for a street-ready twist on tradition.', // :contentReference[oaicite:2]{index=2}
-      'image': 'assets/trend/3.jpg'
+      'image': 'assets/trend/3.jpg',
     },
     {
       'title': 'Graphic Tee Cargo',
       'description':
           'Boxy drop-shoulder tees with bold graphics teamed with utility cargos — TikTok & university-campus favourite.', // :contentReference[oaicite:3]{index=3}
-      'image': 'assets/trend/4.jpg'
+      'image': 'assets/trend/4.jpg',
     },
     {
       'title': 'Velvet Tuxedo',
       'description':
           'Rich velvet or textured jacquard tux jackets in jewel tones or floral prints — inspired by recent Humayun Alamgir and other local runways.', // :contentReference[oaicite:4]{index=4}
-      'image': 'assets/trend/5.jpg'
+      'image': 'assets/trend/5.jpg',
     },
     {
       'title': 'Earthy Tone Kameez',
       'description':
           'Head-to-toe clay, terracotta or dusty olive shalwar-kameez sets that hit the global monotone trend while staying fully traditional.', // :contentReference[oaicite:5]{index=5}
-      'image': 'assets/trend/6.jpg'
+      'image': 'assets/trend/6.jpg',
     },
     {
       'title': 'White Linen Co-Ord',
       'description':
           'Textured white linen two-pieces with asymmetrical hems or Cuban collars — Instagram’s go-to brunch & Jummah fit for 2025.', // :contentReference[oaicite:6]{index=6}
-      'image': 'assets/trend/7.jpg'
+      'image': 'assets/trend/7.jpg',
     },
   ];
   @override
@@ -65,17 +66,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<List<Map<String, dynamic>>> _loadProducts() async {
-  try {
-    final snapshot = await FirebaseFirestore.instance.collection('new_arrivals').get();
-    return snapshot.docs.map((doc) => doc.data()).toList();
-  } catch (e) {
-    if (kDebugMode) {
-      print('Error fetching new arrivals: $e');
+    try {
+      final snapshot =
+          await FirebaseFirestore.instance.collection('new_arrivals').get();
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error fetching new arrivals: $e');
+      }
+      return [];
     }
-    return [];
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +97,9 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(18),
                   color: AppColors.cardBackgroundColor,
                   image: const DecorationImage(
-                    image: NetworkImage('https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80'),
+                    image: NetworkImage(
+                      'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=800&q=80',
+                    ),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -108,7 +111,7 @@ class _HomePageState extends State<HomePage> {
                       end: Alignment.topCenter,
                       colors: [
                         AppColors.darkScaffoldColor.withValues(alpha: 0.7),
-                        Colors.transparent
+                        Colors.transparent,
                       ],
                     ),
                   ),
@@ -122,7 +125,9 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.white,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          shadows: [Shadow(color: Colors.black54, blurRadius: 8)],
+                          shadows: [
+                            Shadow(color: Colors.black54, blurRadius: 8),
+                          ],
                         ),
                       ),
                     ),
@@ -144,10 +149,16 @@ class _HomePageState extends State<HomePage> {
                   },
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 20),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 22,
+                      horizontal: 20,
+                    ),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [AppColors.primary, AppColors.cardBackgroundColor],
+                        colors: [
+                          AppColors.primary,
+                          AppColors.cardBackgroundColor,
+                        ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -162,7 +173,11 @@ class _HomePageState extends State<HomePage> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.auto_awesome, color: Colors.white, size: 32),
+                        const Icon(
+                          Icons.auto_awesome,
+                          color: Colors.white,
+                          size: 32,
+                        ),
                         const SizedBox(width: 18),
                         Expanded(
                           child: Column(
@@ -187,7 +202,11 @@ class _HomePageState extends State<HomePage> {
                             ],
                           ),
                         ),
-                        const Icon(Icons.chevron_right, color: Colors.white, size: 28),
+                        const Icon(
+                          Icons.chevron_right,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ],
                     ),
                   ),
@@ -200,16 +219,20 @@ class _HomePageState extends State<HomePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Trending Styles', 
+                    const Text(
+                      'Trending Styles',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold, 
-                        fontSize: 18, 
-                        color: Colors.white
-                      )),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.white,
+                      ),
+                    ),
                     TextButton(
                       onPressed: () {},
-                      child: const Text('See All', 
-                        style: TextStyle(color: AppColors.primary)),
+                      child: const Text(
+                        'See All',
+                        style: TextStyle(color: AppColors.primary),
+                      ),
                     ),
                   ],
                 ),
@@ -231,12 +254,14 @@ class _HomePageState extends State<HomePage> {
               // New Arrivals Grid
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: const Text('New Arrivals', 
+                child: const Text(
+                  'New Arrivals',
                   style: TextStyle(
-                    fontWeight: FontWeight.bold, 
-                    fontSize: 18, 
-                    color: Colors.white
-                  )),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Colors.white,
+                  ),
+                ),
               ),
               const SizedBox(height: 12),
               FutureBuilder<List<dynamic>>(
@@ -247,24 +272,31 @@ class _HomePageState extends State<HomePage> {
                   }
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return Center(
-                      child: Text('No products found', 
-                        style: TextStyle(color: AppColors.textSecondaryColor)));
+                      child: Text(
+                        'No products found',
+                        style: TextStyle(color: AppColors.textSecondaryColor),
+                      ),
+                    );
                   }
                   final products = snapshot.data!;
                   return GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.63,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.63,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                        ),
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     itemCount: products.take(10).length,
                     itemBuilder: (context, i) {
                       final product = products[i];
-                      return ProductCard(product: product, parentContext: context);
+                      return ProductCard(
+                        product: product,
+                        parentContext: context,
+                      );
                     },
                   );
                 },
@@ -330,4 +362,3 @@ class _TrendingStyleCard extends StatelessWidget {
     );
   }
 }
-

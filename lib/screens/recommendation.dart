@@ -241,6 +241,8 @@ class _PersonalizedRecommendationPageState
 
       setState(() {
         _selectedImage = File(pickedFile.path);
+        _lastQuery = "";
+        _showTextSearchOptions = false;
         _isAnalyzing = true;
         _recommendedOutfits.clear();
       });
@@ -260,8 +262,8 @@ class _PersonalizedRecommendationPageState
 
   void _searchByDescription(String query) {
     setState(() {
-      _selectedImage = null;
       _lastQuery = query;
+      _selectedImage = null;
       _showTextSearchOptions = true;
       _recommendedOutfits.clear(); // Hide random static suggestions
     });
@@ -270,7 +272,7 @@ class _PersonalizedRecommendationPageState
   void _searchTextWardrobe() async {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? "unknown";
     final url = Uri.parse(
-      'http://192.168.1.7:8000/search?query=${Uri.encodeComponent(_lastQuery)}&user_id=$userId&from_wardrobe=true',
+      'http://192.168.1.12:8000/search?query=${Uri.encodeComponent(_lastQuery)}&user_id=$userId&from_wardrobe=true',
     );
 
     final response = await http.get(url);
@@ -293,7 +295,7 @@ class _PersonalizedRecommendationPageState
 
   void _searchTextCatalog() async {
     final url = Uri.parse(
-      'http://192.168.1.7:8000/search?query=${Uri.encodeComponent(_lastQuery)}&from_wardrobe=false',
+      'http://192.168.1.12:8000/search?query=${Uri.encodeComponent(_lastQuery)}&from_wardrobe=false',
     );
 
     final response = await http.get(url);
@@ -319,21 +321,20 @@ class _PersonalizedRecommendationPageState
     if (_selectedImage == null) return;
 
     final userId = FirebaseAuth.instance.currentUser?.uid ?? "unknown";
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse(
-        'http://192.168.1.7:8000/search-by-image',
-      ).replace(queryParameters: {'user_id': userId, 'from_wardrobe': true}),
-    );
-    request.files.add(
-      await http.MultipartFile.fromPath('file', _selectedImage!.path),
-    );
+    final uri = Uri.parse(
+      'http://192.168.1.12:8000/search-by-image',
+    ).replace(queryParameters: {'user_id': userId, 'from_wardrobe': true});
 
-    final response = await request.send();
-    final responseData = await http.Response.fromStream(response);
+    final request = http.MultipartRequest('POST', uri)
+      ..files.add(
+        await http.MultipartFile.fromPath('file', _selectedImage!.path),
+      );
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 200) {
-      final decoded = jsonDecode(responseData.body);
+      final decoded = jsonDecode(response.body);
       List<Map<String, dynamic>> recommendedList =
           List<Map<String, dynamic>>.from(decoded['results']);
       Navigator.push(
@@ -352,21 +353,20 @@ class _PersonalizedRecommendationPageState
   void _findSimilarProducts() async {
     if (_selectedImage == null) return;
 
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse(
-        'http://192.168.1.7:8000/search-by-image',
-      ).replace(queryParameters: {'user_id': userId, 'from_wardrobe': false}),
-    );
-    request.files.add(
-      await http.MultipartFile.fromPath('file', _selectedImage!.path),
-    );
+    final uri = Uri.parse(
+      'http://192.168.1.12:8000/search-by-image',
+    ).replace(queryParameters: {'user_id': userId, 'from_wardrobe': false});
 
-    final response = await request.send();
-    final responseData = await http.Response.fromStream(response);
+    final request = http.MultipartRequest('POST', uri)
+      ..files.add(
+        await http.MultipartFile.fromPath('file', _selectedImage!.path),
+      );
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 200) {
-      final decoded = jsonDecode(responseData.body);
+      final decoded = jsonDecode(response.body);
       List<Map<String, dynamic>> myProductList =
           List<Map<String, dynamic>>.from(decoded['results']);
       Navigator.push(
@@ -448,8 +448,14 @@ class _PersonalizedRecommendationPageState
           IconButton(
             icon: const Icon(Icons.search, color: Colors.white70),
             onPressed: () {
-              final text = _searchController.text.trim();
-              if (text.isNotEmpty) _searchByDescription(text);
+              if (_selectedImage == null &&
+                  _searchController.text.trim().isEmpty)
+                return;
+              if (_selectedImage != null) {
+                // You may directly call _findSimilarProducts or show relevant UI
+              } else if (_searchController.text.trim().isNotEmpty) {
+                _searchByDescription(_searchController.text.trim());
+              }
             },
           ),
           IconButton(
