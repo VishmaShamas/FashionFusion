@@ -135,10 +135,18 @@ async def upload_wardrobe(user_id: str = Form(...), image: UploadFile = File(...
         pickle.dump(feats, open(emb_path, "wb"))
         pickle.dump(names, open(file_path, "wb"))
 
-        return {"valid": True, "category": category, "confidence": round(conf, 3), "saved_image": path}
+        url_path = f"/wardrobe_images/{user_id}/{filename}"
+        return {
+            "valid": True,
+            "category": category,
+            "confidence": round(conf, 3),
+            "saved_image": url_path  # ✅ This is served via FastAPI static route
+        }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+    
 
 # -----------------------------
 # API 2: Search by Text
@@ -258,7 +266,7 @@ if __name__ == "__main__":
 
     uvicorn.run(
         "app:app",
-        host="192.168.1.12",
+        host=ip_address,
         port=8000,
         reload=True
     )

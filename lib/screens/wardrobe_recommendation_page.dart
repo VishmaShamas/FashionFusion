@@ -48,7 +48,7 @@ class WardrobeRecommendationPage extends StatelessWidget {
                   return ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.network(
-                      item['imageUrl'],
+                      'http://192.168.18.73:8000${item['imageUrl']}',
                       fit: BoxFit.cover,
                       width: double.infinity,
                       height: 200,
