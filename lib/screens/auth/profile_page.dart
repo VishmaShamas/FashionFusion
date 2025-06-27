@@ -10,7 +10,6 @@ import 'package:fashion_fusion/screens/auth/login_page.dart';
 import 'package:fashion_fusion/widgets/ui/loader.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -211,16 +210,13 @@ void _showBodyTypeSelector() {
                     GestureDetector(
                       onTap: _editProfile,
                       child: Hero(
-                        tag: 'profile-avatar',
-                        child: CircleAvatar(
-                          radius: 50,
-                          backgroundImage: user.photoURL != null ? NetworkImage(user.photoURL!) : null,
-                          backgroundColor: AppColors.samiDarkColor,
-                          child: user.photoURL == null
-                              ? const Icon(Icons.person, size: 48, color: Colors.white70)
-                              : null,
-                        ),
-                      ),
+  tag: 'profile-avatar',
+  child:  CircleAvatar(
+    radius: 50,
+    backgroundColor: AppColors.samiDarkColor,
+    child: Icon(Icons.person, size: 48, color: Colors.white70),
+  ),
+),
                     ),
                   ],
                 ),
@@ -249,12 +245,12 @@ void _showBodyTypeSelector() {
                 const SizedBox(height: 16),
                 _buildStylePreferences(),
                 const SizedBox(height: 32),
-                _buildSectionTitle("Your Wardrobe", () => {Navigator.push(context, MaterialPageRoute(builder: (context) => WardrobePage()))}),
+                _buildSectionTitle("Your Wardrobe", () {Navigator.push(context, MaterialPageRoute(builder: (context) => WardrobePage()));}),
                 const SizedBox(height: 16),
                 _buildWardrobeCarousel(),
                 const SizedBox(height: 32,),
-                _buildSectionTitle("Liked Items", () => {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => LikedProducts()))
+                _buildSectionTitle("Liked Items", () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => LikedProducts()));
                 }),
                 const SizedBox(height: 16),
                 _buildLikedItemsGrid(),
@@ -598,14 +594,11 @@ void _showBodyTypeSelector() {
             GestureDetector(
               onTap: _pickImage,
               child: CircleAvatar(
-                radius: 40,
-                backgroundImage: _selectedImage != null
-                    ? FileImage(_selectedImage!)
-                    : (user?.photoURL != null ? NetworkImage(user!.photoURL!) : null) as ImageProvider?,
-                child: _selectedImage == null && user?.photoURL == null
-                    ? const Icon(Icons.camera_alt, color: Colors.white70)
-                    : null,
-              ),
+  radius: 40,
+  backgroundColor: AppColors.samiDarkColor,
+  child: const Icon(Icons.camera_alt, color: Colors.white70),
+),
+
             ),
             const SizedBox(height: 16),
             TextField(
@@ -634,22 +627,11 @@ void _showBodyTypeSelector() {
                       final newName = nameController.text.trim();
                       String? imageUrl;
 
-                      if (_selectedImage != null) {
-                        final ref = FirebaseStorage.instance.ref().child('profile_pics/${user!.uid}.jpg');
-                        await ref.putFile(_selectedImage!);
-                        imageUrl = await ref.getDownloadURL();
-                      }
-
                       final updates = <String, dynamic>{};
 
                       if (newName.isNotEmpty && newName != user!.displayName) {
                         await user!.updateDisplayName(newName);
                         updates['name'] = newName;
-                      }
-
-                      if (imageUrl != null) {
-                        await user!.updatePhotoURL(imageUrl);
-                        updates['image'] = imageUrl; // updated key
                       }
 
                       await user!.reload();

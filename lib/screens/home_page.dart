@@ -55,7 +55,7 @@ class _HomePageState extends State<HomePage> {
       'title': 'White Linen Co-Ord',
       'description':
           'Textured white linen two-pieces with asymmetrical hems or Cuban collars — Instagram’s go-to brunch & Jummah fit for 2025.', // :contentReference[oaicite:6]{index=6}
-      'image': 'https://source.unsplash.com/600x600/?men,white,linen'
+      'image': 'assets/trend/7.jpg'
     },
   ];
   @override
@@ -306,8 +306,8 @@ class _TrendingStyleCard extends StatelessWidget {
               height: 150,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: NetworkImage(style['image']!),
-                  fit: BoxFit.cover,
+                  image: AssetImage(style['image']!),
+                  fit: BoxFit.scaleDown,
                 ),
               ),
             ),

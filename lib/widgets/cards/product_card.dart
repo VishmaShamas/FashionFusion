@@ -97,10 +97,10 @@ class ProductCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 1),
                   // Only show price if present
-                  if (priceWidget != null) ...[
-                    const SizedBox(height: 6),
-                    priceWidget,
-                  ],
+                  ...[
+                  const SizedBox(height: 6),
+                  priceWidget,
+                ],
                   // If price is null, the card ends here (shorter card)
                 ],
               ),

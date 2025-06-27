@@ -1,7 +1,5 @@
 import 'dart:io';
 import 'package:fashion_fusion/screens/wardrobe_recommendation_page.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';

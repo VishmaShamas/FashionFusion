@@ -27,18 +27,18 @@ class _ProductPageState extends State<ProductPage> {
   bool _showFilters = true;
   final ScrollController _scrollController = ScrollController();
    // Pagination state
-  int _limit = 30;
+  final int _limit = 30;
   // int _currentPage = 0;
   int _totalPages = 1;
 
 
 
   DocumentSnapshot? _lastDoc;
-bool _hasMore = true;
-bool _isLoadingMore = false;
+final bool _hasMore = true;
+final bool _isLoadingMore = false;
 int _currentPage = 0;
 
-List<DocumentSnapshot> _lastDocs = []; // For going back to prev page
+final List<DocumentSnapshot> _lastDocs = []; // For going back to prev page
 
 //   Future<void> _loadProducts({bool isLoadMore = false, bool isPrev = false}) async {
 //   if (_isLoadingMore) return;

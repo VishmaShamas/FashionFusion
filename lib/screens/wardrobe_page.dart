@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import 'package:fashion_fusion/constants/colors.dart';
@@ -18,11 +17,12 @@ class WardrobePage extends StatefulWidget {
 }
 
 class _WardrobePageState extends State<WardrobePage> {
+  
   final ImagePicker _picker = ImagePicker();
   File? _selectedImage;
   bool _isUploading = false;
   final ImageLabeler _labeler = ImageLabeler(options: ImageLabelerOptions());
-  double _scanPosition = 0;
+  final double _scanPosition = 0;
   final List<String> _categories = [
     // keep exactly the same spelling & case as backend CATS
     'shirt',
@@ -49,11 +49,43 @@ class _WardrobePageState extends State<WardrobePage> {
     'hoodie',
   ];
 
+  @override
+void initState() {
+  super.initState();
+  _loadWardrobeItems();
+}
+
+
   String _titleCase(String txt) =>
       txt.split(' ').map((w) => w[0].toUpperCase() + w.substring(1)).join(' ');
 
   String _selectedCategory = 'All';
   final List<Map<String, dynamic>> _wardrobeItems = [];
+
+  void _loadWardrobeItems() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  final docRef = FirebaseFirestore.instance.collection('users').doc(user.email);
+  final snapshot = await docRef.get();
+
+  if (snapshot.exists && snapshot.data() != null) {
+    final data = snapshot.data()!;
+    final List wardrobe = data['wardrobe'] ?? [];
+
+    setState(() {
+      _wardrobeItems.clear();
+      for (var item in wardrobe) {
+        _wardrobeItems.add({
+          'imageUrl': File(item['imageUrl']),
+          'category': item['category'],
+          'uploadDate': item['uploadDate'],
+        });
+      }
+    });
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -185,12 +217,13 @@ class _WardrobePageState extends State<WardrobePage> {
       onTap: () => _showItemDetails(item),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: Image.network(
-          item['imageUrl'],
-          width: double.infinity,
-          height: 200,
-          fit: BoxFit.cover,
-        ),
+        child:Image.network(
+        'http://192.168.1.6:8000${item['imageUrl']}',
+        width: double.infinity,
+        height: 200,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Icon(Icons.broken_image),
+      ),
       ),
     );
   }
@@ -267,13 +300,11 @@ class _WardrobePageState extends State<WardrobePage> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.network(
-            item['imageUrl'],
-            width: double.infinity,
-            height: 200,
-            fit: BoxFit.cover,
-          ),
+  'http://192.168.1.6:8000${item['imageUrl']}',
+  fit: BoxFit.cover,
+),
         ),
-      ),
+      )
     );
   }
 
@@ -304,30 +335,32 @@ class _WardrobePageState extends State<WardrobePage> {
       });
 
       // ---------- send to backend ----------
-      const apiUrl = 'http://192.168.1.7:8000/predict'; // your backend
+      const apiUrl = 'http://192.168.1.6:8000/upload-wardrobe'; // your backend
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('Not logged in');
 
+
       final request =
           http.MultipartRequest('POST', Uri.parse(apiUrl))
-            ..fields['email'] = user.email ?? ''
+            ..fields['user_id'] = user.uid ?? ''
             ..files.add(
               await http.MultipartFile.fromPath('image', imageFile.path),
             );
 
-      final response = await http.Response.fromStream(await request.send());
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
 
       setState(() => _isUploading = false);
-
-      if (response.statusCode != 200) {
-        _showErrorDialog('Server error', 'Unable to process image.');
-        return;
-      }
 
       final resJson =
           response.body.isNotEmpty
               ? Map<String, dynamic>.from(json.decode(response.body))
               : {};
+
+      if (response.statusCode != 200) {
+    _showErrorDialog('Invalid image', resJson['reason'] ?? 'Unknown error');
+        return;
+      }
 
       if (resJson['valid'] == false) {
         _showErrorDialog('Invalid image', resJson['reason'] ?? 'Unknown error');
@@ -335,10 +368,12 @@ class _WardrobePageState extends State<WardrobePage> {
       }
 
       // ---------- success ----------
-      final backendCategory =
-          (resJson['category'] ?? 'shirt').toString().toLowerCase();
+      final backendCategory = (resJson['category'] ?? 'shirt').toString().toLowerCase();
+      final savedImagePath = resJson['saved_image']; // e.g. assets/{user.uid}/item1.png
+await _showUploadConfirmation(backendCategory, savedImagePath);
+// e.g., assets/userid/file.png
+ // e.g., assets/userid/file.png
 
-      await _showUploadConfirmation(backendCategory);
     } catch (e) {
       setState(() => _isUploading = false);
       _showErrorDialog('Error', 'Failed to process image: ${e.toString()}');
@@ -422,7 +457,7 @@ class _WardrobePageState extends State<WardrobePage> {
     return 'Other';
   }
 
-  Future<void> _showUploadConfirmation(String detectedCategory) async {
+Future<void> _showUploadConfirmation(String detectedCategory, String savedImagePath) async {
     String? selectedCategory = detectedCategory;
 
     await showModalBottomSheet(
@@ -456,13 +491,15 @@ class _WardrobePageState extends State<WardrobePage> {
                   const SizedBox(height: 16),
                   if (_selectedImage != null)
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.file(
-                        _selectedImage!,
-                        height: 150,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
+  borderRadius: BorderRadius.circular(12),
+  child: Image.network(
+  'http://192.168.1.6:8000$savedImagePath',
+  height: 150,
+  fit: BoxFit.cover,
+),
+
+),
+
                   const SizedBox(height: 24),
                   _buildCategoryDropdown(selectedCategory, (newValue) {
                     setState(() => selectedCategory = newValue);
@@ -500,7 +537,8 @@ class _WardrobePageState extends State<WardrobePage> {
                               return;
                             }
 
-                            await _uploadWardrobeItem(selectedCategory!);
+                            await _uploadWardrobeItem(selectedCategory!, savedImagePath);
+
                             // ignore: use_build_context_synchronously
                             Navigator.pop(context);
                           },
@@ -616,138 +654,111 @@ class _WardrobePageState extends State<WardrobePage> {
     );
   }
 
-  Future<void> _uploadWardrobeItem(String category) async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null || _selectedImage == null) return;
+  Future<void> _uploadWardrobeItem(String category, String imagePath) async {
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+if (user == null) return;
 
-      // Create file reference
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileRef = FirebaseStorage.instance.ref().child(
-        'wardrobe/${user.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg',
-      );
+final firestore = FirebaseFirestore.instance;
+final docRef = firestore.collection('users').doc(user.email);
 
-      final uploadTask = await fileRef.putFile(_selectedImage!); // ✅ Await this
+await docRef.set({
+  'wardrobe': FieldValue.arrayUnion([
+    {
+      'imageUrl': imagePath,
+      'category': category,
+      'uploadDate': DateTime.now().toIso8601String(),
+    },
+  ]),
+}, SetOptions(merge: true));
 
-      final imageUrl = await fileRef.getDownloadURL();
+setState(() {
+  _wardrobeItems.insert(0, {
+    'imageUrl': imagePath,
+    'category': category,
+    'uploadDate': DateTime.now().toString().split(' ')[0],
+  });
+  _isUploading = false;
+});
 
-      // Save to Firestore under users/{email}/wardrobe (as array)
-      final firestore = FirebaseFirestore.instance;
-      final docRef = firestore.collection('users').doc(user.email);
 
-      await docRef.set({
-        'wardrobe': FieldValue.arrayUnion([
-          {
-            'imageUrl': imageUrl,
-            'category': category,
-            'uploadDate': DateTime.now().toIso8601String(),
-          },
-        ]),
-      }, SetOptions(merge: true)); // merge instead of overwrite
-
-      setState(() {
-        _wardrobeItems.insert(0, {
-          'imageUrl': imageUrl,
-          'category': category,
-          'uploadDate': DateTime.now().toString().split(' ')[0],
-        });
-        _isUploading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✅ Item added to wardrobe!')),
-      );
-    } catch (e) {
-      setState(() => _isUploading = false);
-
-      await showDialog(
-        context: context,
-        builder:
-            (context) => AlertDialog(
-              title: const Text('Upload Failed'),
-              content: Text(
-                'An error occurred while uploading:\n\n${e.toString()}',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('✅ Item added to wardrobe!')),
+    );
+  } catch (e) {
+    setState(() => _isUploading = false);
+    _showErrorDialog('Upload Failed', e.toString());
   }
+}
 
-  void _showItemDetails(Map<String, dynamic> item) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.samiDarkColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder:
-          (context) => Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    item['imageUrl'],
-                    height: 200,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  item['category'],
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${item['category']}',
-                  // ignore: deprecated_member_use
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Added on ${item['uploadDate']}',
-                  // ignore: deprecated_member_use
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  child: const Text('Close'),
-                ),
-              ],
+ void _showItemDetails(Map<String, dynamic> item) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: AppColors.samiDarkColor,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (context) => Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              'http://192.168.1.6:8000${item['imageUrl']}',
+              width: double.infinity,
+              height: 200,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
             ),
           ),
-    );
-  }
+          const SizedBox(height: 16),
+          Text(
+            item['category'],
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            item['category'],
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Added on ${item['uploadDate']}',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.6),
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 32,
+                vertical: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   void _showErrorDialog(String title, String message) {
     showDialog(
