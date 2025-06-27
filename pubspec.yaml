@@ -93,6 +93,7 @@ flutter:
     - assets/data/
     - assets/data/data.json
     - assets/data/data2.json
+    - assets/data/trend/
   #   - images/a_dot_ham.jpeg
 
   # fonts:
@@ -110,7 +111,7 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
 flutter_native_splash:
-  color: '#333' # background color
+  color: '#09031B' # background color
   image: assets/logo/slogo.png # your logo path
   android: true
   ios: true

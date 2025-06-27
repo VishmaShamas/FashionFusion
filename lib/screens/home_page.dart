@@ -15,50 +15,49 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late Future<List<dynamic>> _productFuture;
-  final List<Map<String, String>> trendingMensPk = [
-  {
-    'title': 'Pastel Kurta-Pajama',
-    'description':
-        'Soft powder blues, mints and beiges in breathable cotton/cambric with barely-there embroidery; perfect for summer weddings and Eid.', // :contentReference[oaicite:0]{index=0}
-    'image': 'https://source.unsplash.com/600x600/?men,pastel,kurta'
-  },
-  {
-    'title': 'Lightweight Linen Overshirt & Relaxed Trousers',
-    'description':
-        'Unstructured linen or linen-blend overshirts worn open over a basic tee, paired with relaxed cotton pants — the “soft tailoring” vibe for humid days.', // :contentReference[oaicite:1]{index=1}
-    'image': 'https://source.unsplash.com/600x600/?men,linen,overshirt'
-  },
-  {
-    'title': 'Denim / Chambray Kurta with Jeans',
-    'description':
-        'The fusion look: mid-wash denim or chambray kurta worn over jeans for a street-ready twist on tradition.', // :contentReference[oaicite:2]{index=2}
-    'image': 'https://source.unsplash.com/600x600/?men,denim,kurta'
-  },
-  {
-    'title': 'Oversized Graphic Tee & Cargo Pants',
-    'description':
-        'Boxy drop-shoulder tees with bold graphics teamed with utility cargos — TikTok & university-campus favourite.', // :contentReference[oaicite:3]{index=3}
-    'image': 'https://source.unsplash.com/600x600/?men,graphic,tee,cargo'
-  },
-  {
-    'title': 'Statement Velvet / Jacquard Tuxedo',
-    'description':
-        'Rich velvet or textured jacquard tux jackets in jewel tones or floral prints — inspired by recent Humayun Alamgir and other local runways.', // :contentReference[oaicite:4]{index=4}
-    'image': 'https://source.unsplash.com/600x600/?men,velvet,tuxedo'
-  },
-  {
-    'title': 'Earth-Tone Monochrome Shalwar-Kameez',
-    'description':
-        'Head-to-toe clay, terracotta or dusty olive shalwar-kameez sets that hit the global monotone trend while staying fully traditional.', // :contentReference[oaicite:5]{index=5}
-    'image': 'https://source.unsplash.com/600x600/?men,shalwar,kameez,earth-tone'
-  },
-  {
-    'title': 'Crisp White Linen Co-Ord',
-    'description':
-        'Textured white linen two-pieces with asymmetrical hems or Cuban collars — Instagram’s go-to brunch & Jummah fit for 2025.', // :contentReference[oaicite:6]{index=6}
-    'image': 'https://source.unsplash.com/600x600/?men,white,linen'
-  },
-];
+    final List<Map<String, String>> trendingMensPk = [
+    {
+      'title': 'Pastel Kurta-Pajama',
+      'description':
+          'Soft powder blues, mints and beiges in breathable cotton/cambric with barely-there embroidery; perfect for summer weddings and Eid.', // :contentReference[oaicite:0]{index=0}
+      'image': 'assets/trend/1.jpg'
+    },
+    {
+      'title': 'Overshirt Combo',
+      'description':  'Unstructured linen or linen-blend overshirts worn open over a basic tee, paired with relaxed cotton pants — the “soft tailoring” vibe for humid days.', // :contentReference[oaicite:1]{index=1}
+      'image': 'assets/trend/2.jpg'
+    },
+    {
+      'title': 'Denim Kurta Fusion',
+      'description':
+          'The fusion look: mid-wash denim or chambray kurta worn over jeans for a street-ready twist on tradition.', // :contentReference[oaicite:2]{index=2}
+      'image': 'assets/trend/3.jpg'
+    },
+    {
+      'title': 'Graphic Tee Cargo',
+      'description':
+          'Boxy drop-shoulder tees with bold graphics teamed with utility cargos — TikTok & university-campus favourite.', // :contentReference[oaicite:3]{index=3}
+      'image': 'assets/trend/4.jpg'
+    },
+    {
+      'title': 'Velvet Tuxedo',
+      'description':
+          'Rich velvet or textured jacquard tux jackets in jewel tones or floral prints — inspired by recent Humayun Alamgir and other local runways.', // :contentReference[oaicite:4]{index=4}
+      'image': 'assets/trend/5.jpg'
+    },
+    {
+      'title': 'Earthy Tone Kameez',
+      'description':
+          'Head-to-toe clay, terracotta or dusty olive shalwar-kameez sets that hit the global monotone trend while staying fully traditional.', // :contentReference[oaicite:5]{index=5}
+      'image': 'assets/trend/6.jpg'
+    },
+    {
+      'title': 'White Linen Co-Ord',
+      'description':
+          'Textured white linen two-pieces with asymmetrical hems or Cuban collars — Instagram’s go-to brunch & Jummah fit for 2025.', // :contentReference[oaicite:6]{index=6}
+      'image': 'https://source.unsplash.com/600x600/?men,white,linen'
+    },
+  ];
   @override
   void initState() {
     super.initState();

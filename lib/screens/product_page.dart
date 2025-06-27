@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fashion_fusion/widgets/ui/loader.dart';
 import 'package:flutter/material.dart';
 import '../constants/colors.dart';
@@ -25,11 +26,70 @@ class _ProductPageState extends State<ProductPage> {
   bool _loading = true;
   bool _showFilters = true;
   final ScrollController _scrollController = ScrollController();
-
-  // Pagination state
+   // Pagination state
   int _limit = 30;
-  int _currentPage = 0;
+  // int _currentPage = 0;
   int _totalPages = 1;
+
+
+
+  DocumentSnapshot? _lastDoc;
+bool _hasMore = true;
+bool _isLoadingMore = false;
+int _currentPage = 0;
+
+List<DocumentSnapshot> _lastDocs = []; // For going back to prev page
+
+//   Future<void> _loadProducts({bool isLoadMore = false, bool isPrev = false}) async {
+//   if (_isLoadingMore) return;
+//   setState(() {
+//     _loading = true;
+//     _isLoadingMore = true;
+//   });
+
+//   try {
+//     Query query = FirebaseFirestore.instance
+//         .collection('products')
+//         .orderBy('title') // Make sure "title" is indexed!
+//         .limit(_limit);
+
+//     if (isLoadMore && _lastDoc != null) {
+//       query = query.startAfterDocument(_lastDoc!);
+//     }
+//     // For prev: you’d need to keep previous docs. Not needed if you only allow forward.
+
+//     final snap = await query.get();
+//     final docs = snap.docs;
+
+//     setState(() {
+//       _allProducts = docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+//       _paginatedProducts = _allProducts;
+//       _filteredProducts = _allProducts;
+//       _brands = {'All', ..._allProducts.map((p) => p['brand'] ?? '').where((b) => b.toString().isNotEmpty)};
+//       _categories = {'All', ..._allProducts.map((p) => p['category'] ?? '').where((c) => c.toString().isNotEmpty)};
+//       _loading = false;
+//       _isLoadingMore = false;
+
+//       if (docs.length < _limit) {
+//         _hasMore = false;
+//       } else {
+//         _hasMore = true;
+//       }
+
+//       if (docs.isNotEmpty) {
+//         _lastDoc = docs.last;
+//         if (isLoadMore) {
+//           _lastDocs.add(_lastDoc!);
+//         }
+//       }
+//     });
+//   } catch (e) {
+//     setState(() {
+//       _loading = false;
+//       _isLoadingMore = false;
+//     });
+//   }
+// }
 
   @override
   void initState() {

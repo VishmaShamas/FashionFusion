@@ -141,6 +141,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         password: password,
       );
 
+      // create uid
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+
       // Create Firestore user document
       await FirebaseFirestore.instance.collection('users').doc(email).set({
         'name': name,
@@ -148,6 +151,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         'bodyType': bodyTypes[selectedBodyTypeIndex]['label'],
         'wardrobe': [],
         'preferences': [],
+        'uid': uid,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
