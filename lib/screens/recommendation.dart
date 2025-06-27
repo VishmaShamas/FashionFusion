@@ -31,6 +31,7 @@ class _PersonalizedRecommendationPageState
   List<String> _recommendedOutfits = [];
   String _lastQuery = '';
   bool _showTextSearchOptions = false;
+  String? _selectedOutfit;
 
   final List<String> validBodyTypes = [
     'Straight Frame',
@@ -245,6 +246,8 @@ class _PersonalizedRecommendationPageState
         _showTextSearchOptions = false;
         _isAnalyzing = true;
         _recommendedOutfits.clear();
+
+        _selectedOutfit = null;
       });
 
       for (int i = 0; i < 5; i++) {
@@ -265,6 +268,7 @@ class _PersonalizedRecommendationPageState
       _lastQuery = query;
       _selectedImage = null;
       _showTextSearchOptions = true;
+      _selectedOutfit = null;
       _recommendedOutfits.clear(); // Hide random static suggestions
     });
   }
@@ -272,11 +276,7 @@ class _PersonalizedRecommendationPageState
   void _searchTextWardrobe() async {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? "unknown";
     final url = Uri.parse(
-<<<<<<< HEAD
       'http://192.168.1.12:8000/search?query=${Uri.encodeComponent(_lastQuery)}&user_id=$userId&from_wardrobe=true',
-=======
-      'http://192.168.18.73:8000/search?query=${Uri.encodeComponent(_lastQuery)}&user_id=$userId&from_wardrobe=true',
->>>>>>> 4d559babf27f6d64c4de402bd506e8d1d71a5e85
     );
 
     final response = await http.get(url);
@@ -299,11 +299,7 @@ class _PersonalizedRecommendationPageState
 
   void _searchTextCatalog() async {
     final url = Uri.parse(
-<<<<<<< HEAD
       'http://192.168.1.12:8000/search?query=${Uri.encodeComponent(_lastQuery)}&from_wardrobe=false',
-=======
-      'http://192.168.18.73:8000/search?query=${Uri.encodeComponent(_lastQuery)}&from_wardrobe=false',
->>>>>>> 4d559babf27f6d64c4de402bd506e8d1d71a5e85
     );
 
     final response = await http.get(url);
@@ -329,21 +325,9 @@ class _PersonalizedRecommendationPageState
     if (_selectedImage == null) return;
 
     final userId = FirebaseAuth.instance.currentUser?.uid ?? "unknown";
-<<<<<<< HEAD
     final uri = Uri.parse(
       'http://192.168.1.12:8000/search-by-image',
     ).replace(queryParameters: {'user_id': userId, 'from_wardrobe': true});
-=======
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse(
-        'http://192.168.18.73:8000/search-by-image',
-      ).replace(queryParameters: {'user_id': userId, 'from_wardrobe': true}),
-    );
-    request.files.add(
-      await http.MultipartFile.fromPath('file', _selectedImage!.path),
-    );
->>>>>>> 4d559babf27f6d64c4de402bd506e8d1d71a5e85
 
     final request = http.MultipartRequest('POST', uri)
       ..files.add(
@@ -373,21 +357,9 @@ class _PersonalizedRecommendationPageState
   void _findSimilarProducts() async {
     if (_selectedImage == null) return;
 
-<<<<<<< HEAD
     final uri = Uri.parse(
       'http://192.168.1.12:8000/search-by-image',
     ).replace(queryParameters: {'user_id': userId, 'from_wardrobe': false});
-=======
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse(
-        'http://192.168.18.73:8000/search-by-image',
-      ).replace(queryParameters: {'user_id': userId, 'from_wardrobe': false}),
-    );
-    request.files.add(
-      await http.MultipartFile.fromPath('file', _selectedImage!.path),
-    );
->>>>>>> 4d559babf27f6d64c4de402bd506e8d1d71a5e85
 
     final request = http.MultipartRequest('POST', uri)
       ..files.add(
@@ -414,7 +386,6 @@ class _PersonalizedRecommendationPageState
     }
   }
 
-  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -535,21 +506,43 @@ class _PersonalizedRecommendationPageState
             child: Row(
               children:
                   _bodyTypeOutfitSuggestions[bodyType]!.map((outfit) {
+                    final isSelected = _selectedOutfit == outfit;
                     return Padding(
                       padding: const EdgeInsets.only(right: 12),
                       child: GestureDetector(
-                        onTap: () => _searchByDescription(outfit),
+                        onTap: () {
+                          setState(() {
+                            _selectedOutfit = outfit;
+                          });
+                          _searchByDescription(outfit);
+                        },
                         child: Chip(
                           label: Text(
                             outfit,
                             style: TextStyle(
-                              color: AppColors.cardBackgroundColor,
+                              color:
+                                  isSelected
+                                      ? Colors.white
+                                      : AppColors.cardBackgroundColor,
+                              fontWeight:
+                                  isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
                             ),
                           ),
-                          backgroundColor: AppColors.primary.withOpacity(0.2),
+                          backgroundColor:
+                              isSelected
+                                  ? AppColors.primary
+                                  : AppColors.primary.withOpacity(0.2),
                           side: BorderSide(
-                            color: AppColors.primary.withOpacity(0.5),
+                            color:
+                                isSelected
+                                    ? AppColors.primary
+                                    : AppColors.primary.withOpacity(0.5),
+                            width: isSelected ? 2 : 1,
                           ),
+                          elevation: isSelected ? 4 : 0,
+                          shadowColor: isSelected ? AppColors.primary : null,
                         ),
                       ),
                     );
