@@ -217,7 +217,7 @@ class _WardrobePageState extends State<WardrobePage> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Image.network(
-          'http://172.20.10.12:8000${item['imageUrl']}',
+          'http://192.168.18.73:8000${item['imageUrl']}',
           width: double.infinity,
           height: 200,
           fit: BoxFit.cover,
@@ -299,7 +299,7 @@ class _WardrobePageState extends State<WardrobePage> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.network(
-            'http://172.20.10.12:8000${item['imageUrl']}',
+            'http://192.168.18.73:8000${item['imageUrl']}',
             fit: BoxFit.cover,
           ),
         ),
@@ -334,7 +334,7 @@ class _WardrobePageState extends State<WardrobePage> {
       });
 
       // ---------- send to backend ----------
-      const apiUrl = 'http://172.20.10.12:8000/upload-wardrobe'; // your backend
+      const apiUrl = 'http://192.168.18.73:8000/upload-wardrobe'; // your backend
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('Not logged in');
 
@@ -494,8 +494,8 @@ class _WardrobePageState extends State<WardrobePage> {
                   if (_selectedImage != null)
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        'http://172.20.10.12:8000$savedImagePath',
+                      child: Image.file(
+                        _selectedImage!,
                         height: 150,
                         fit: BoxFit.cover,
                       ),
@@ -709,7 +709,7 @@ class _WardrobePageState extends State<WardrobePage> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(
-                    'http://172.20.10.12:8000${item['imageUrl']}',
+                    'http://192.168.18.73:8000${item['imageUrl']}',
                     width: double.infinity,
                     height: 200,
                     fit: BoxFit.cover,
