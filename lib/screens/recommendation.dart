@@ -270,7 +270,7 @@ class _PersonalizedRecommendationPageState
   void _searchTextWardrobe() async {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? "unknown";
     final url = Uri.parse(
-      'http://192.168.1.7:8000/search?query=${Uri.encodeComponent(_lastQuery)}&user_id=$userId&from_wardrobe=true',
+      'http://172.20.10.12:8000/search?query=${Uri.encodeComponent(_lastQuery)}&user_id=$userId&from_wardrobe=true',
     );
 
     final response = await http.get(url);
@@ -293,7 +293,7 @@ class _PersonalizedRecommendationPageState
 
   void _searchTextCatalog() async {
     final url = Uri.parse(
-      'http://192.168.1.7:8000/search?query=${Uri.encodeComponent(_lastQuery)}&from_wardrobe=false',
+      'http://172.20.10.12:8000/search?query=${Uri.encodeComponent(_lastQuery)}&from_wardrobe=false',
     );
 
     final response = await http.get(url);
@@ -322,7 +322,7 @@ class _PersonalizedRecommendationPageState
     final request = http.MultipartRequest(
       'POST',
       Uri.parse(
-        'http://192.168.1.7:8000/search-by-image',
+        'http://172.20.10.12:8000/search-by-image',
       ).replace(queryParameters: {'user_id': userId, 'from_wardrobe': true}),
     );
     request.files.add(
@@ -355,7 +355,7 @@ class _PersonalizedRecommendationPageState
     final request = http.MultipartRequest(
       'POST',
       Uri.parse(
-        'http://192.168.1.7:8000/search-by-image',
+        'http://172.20.10.12:8000/search-by-image',
       ).replace(queryParameters: {'user_id': userId, 'from_wardrobe': false}),
     );
     request.files.add(
