@@ -1,6 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fashion_fusion/screens/wardrobe_recommendation_page.dart';
+import 'package:fashion_fusion/widgets/ui/loader.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import 'package:fashion_fusion/screens/product_recommendation_page.dart';
@@ -14,25 +19,28 @@ class PersonalizedRecommendationPage extends StatefulWidget {
       _PersonalizedRecommendationPageState();
 }
 
-class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendationPage> {
+class _PersonalizedRecommendationPageState
+    extends State<PersonalizedRecommendationPage> {
   final TextEditingController _searchController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   File? _selectedImage;
   bool _isAnalyzing = false;
   double _scanPosition = 0;
-  String _bodyType = 'Athletic';
+  String? bodyType;
+  String? userId;
   List<String> _recommendedOutfits = [];
-  List<String> _trendingStyles = [];
-  final List<String> validBodyTypes = [
-  'Straight Frame',
-  'V-Shape Build',
-  'Round Body',
-  'Fit & Toned',
-  'Compact Build',
-  'Slim Soft',
-  'Balanced Shape',
-];
+  String _lastQuery = '';
+  bool _showTextSearchOptions = false;
 
+  final List<String> validBodyTypes = [
+    'Straight Frame',
+    'V-Shape Build',
+    'Round Body',
+    'Fit & Toned',
+    'Compact Build',
+    'Slim Soft',
+    'Balanced Shape',
+  ];
 
   late final ImageLabeler _labeler;
 
@@ -40,41 +48,39 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
     {
       'label': 'Straight Frame',
       'image': 'assets/bodyType/body1.png',
-      'desc' : 'Equal shoulders, waist, and hips.',
+      'desc': 'Equal shoulders, waist, and hips.',
     },
     {
       'label': 'V-Shape Build',
       'image': 'assets/bodyType/body2.png',
-      'desc' : 'Broad shoulders, narrow waistline below.',
+      'desc': 'Broad shoulders, narrow waistline below.',
     },
     {
       'label': 'Round Body',
       'image': 'assets/bodyType/body3.png',
-      'desc' : 'Softer belly with wider torso.',
+      'desc': 'Softer belly with wider torso.',
     },
     {
       'label': 'Fit & Toned',
       'image': 'assets/bodyType/body4.png',
-      'desc' : 'Lean body with visible muscle.',
+      'desc': 'Lean body with visible muscle.',
     },
     {
       'label': 'Compact Build',
       'image': 'assets/bodyType/body5.png',
-      'desc' : 'Short, thick, strong-looking frame.',
+      'desc': 'Short, thick, strong-looking frame.',
     },
     {
       'label': 'Slim Soft',
       'image': 'assets/bodyType/body6.png',
-      'desc' : 'Thin frame with less muscle tone.',
+      'desc': 'Thin frame with less muscle tone.',
     },
     {
       'label': 'Balanced Shape',
       'image': 'assets/bodyType/body7.png',
-      'desc' : 'Broad top, defined lower waist.',
+      'desc': 'Broad top, defined lower waist.',
     },
   ];
-
-  
 
   final Map<String, List<String>> _bodyTypeOutfitSuggestions = {
     'Straight Frame': [
@@ -197,39 +203,35 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
       'Unstructured coat & slim chinos',
     ],
   };
-  final List<String> _trendingOutfits = [
-    'Monochromatic Streetwear',
-    'Retro Sportswear',
-    'Techwear Essentials',
-    'Minimalist Business Casual',
-    'Urban Utility Wear'
-  ];
 
   @override
   void initState() {
     super.initState();
     _fetchUserBodyType();
-    _loadTrendingStyles();
+    _fetchUserId();
 
     final options = ImageLabelerOptions(confidenceThreshold: 0.6);
     _labeler = ImageLabeler(options: options);
   }
 
+  void _fetchUserId() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    setState(() {
+      userId = user.uid;
+    });
+  }
+
   void _fetchUserBodyType() {
-    setState(() => _bodyType = 'Athletic');
-  }
-
-  void _loadTrendingStyles() {
-    setState(() {
-      _trendingStyles = [...?_bodyTypeOutfitSuggestions[_bodyType], ..._trendingOutfits];
-    });
-  }
-
-  void _changeBodyType(String newType) {
-    setState(() {
-      _bodyType = newType;
-      _loadTrendingStyles();
-    });
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.email)
+        .get()
+        .then((value) {
+          setState(() {
+            bodyType = value.data()!['bodyType'];
+          });
+        });
   }
 
   Future<void> _pickAndAnalyzeImage() async {
@@ -248,150 +250,175 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
         await Future.delayed(const Duration(milliseconds: 300));
       }
 
-      final inputImage = InputImage.fromFile(File(pickedFile.path));
-      final labels = await _labeler.processImage(inputImage);
-
-      final clothingLabels = labels.where((label) =>
-        label.label.toLowerCase().contains('shirt') ||
-        label.label.toLowerCase().contains('pant') ||
-        label.label.toLowerCase().contains('jacket') ||
-        label.label.toLowerCase().contains('suit') ||
-        label.label.toLowerCase().contains('wear') ||
-        label.label.toLowerCase().contains('clothing')
-      ).toList();
-
-      clothingLabels.sort((a, b) => b.confidence.compareTo(a.confidence));
-      final topLabels = clothingLabels.take(3).map((e) => e.label).toList();
-
-      final recommendations = topLabels.map((label) {
-        return '$_bodyType $label outfit';
-      }).toList();
-
       setState(() {
         _isAnalyzing = false;
-        _recommendedOutfits = recommendations;
       });
-
     } catch (e) {
       setState(() => _isAnalyzing = false);
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error analyzing image: ${e.toString()}')),
-      );
     }
   }
 
   void _searchByDescription(String query) {
     setState(() {
       _selectedImage = null;
-      _recommendedOutfits = [
-        'Casual $query outfit',
-        'Formal $query look',
-        'Streetwear inspired by $query'
-      ];
+      _lastQuery = query;
+      _showTextSearchOptions = true;
+      _recommendedOutfits.clear(); // Hide random static suggestions
     });
   }
 
-  void _showBodyTypeSelector() {
-    final bodyTypes = ['Athletic', 'Slim', 'Muscular', 'Stocky'];
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.samiDarkColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Select Your Body Type',
-                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            ...bodyTypes.map((type) {
-              return ListTile(
-                title: Text(type, style: const TextStyle(color: Colors.white)),
-                trailing: _bodyType == type
-                    ? Icon(Icons.check, color: AppColors.primary)
-                    : null,
-                onTap: () {
-                  _changeBodyType(type);
-                  Navigator.pop(context);
-                },
-              );
-            }),
-          ],
-        ),
-      ),
+  void _searchTextWardrobe() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? "unknown";
+    final url = Uri.parse(
+      'http://192.168.1.7:8000/search?query=${Uri.encodeComponent(_lastQuery)}&user_id=$userId&from_wardrobe=true',
     );
+
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      List<Map<String, dynamic>> recommendedList =
+          List<Map<String, dynamic>>.from(decoded['results']);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => WardrobeRecommendationPage(items: recommendedList),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Wardrobe search failed")));
+    }
   }
 
-  void _findSimilarInWardrobe() {
-    setState(() {
-      _recommendedOutfits = [
-        'Similar items in your wardrobe',
-        'Matching accessories',
-        'Complementary colors'
-      ];
-    });
-    List<Map<String, dynamic>> recommendedList = [];
-    Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (_) => WardrobeRecommendationPage(items: recommendedList),
-  ),
-);
+  void _searchTextCatalog() async {
+    final url = Uri.parse(
+      'http://192.168.1.7:8000/search?query=${Uri.encodeComponent(_lastQuery)}&from_wardrobe=false',
+    );
 
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      List<Map<String, dynamic>> productList = List<Map<String, dynamic>>.from(
+        decoded['results'],
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProductRecommendationPage(products: productList),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Catalog search failed")));
+    }
   }
 
-  void _findSimilarProducts() {
-    setState(() {
-      _recommendedOutfits = [
-        'Similar products from our partners',
-        'Recommended brands',
-        'Trending items matching your style'
-      ];
-    });
-    List<Map<String, dynamic>> myProductList = [];
-    Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (_) => ProductRecommendationPage(products: myProductList),
-  ),
-);
+  void _findSimilarInWardrobe() async {
+    if (_selectedImage == null) return;
 
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? "unknown";
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse(
+        'http://192.168.1.7:8000/search-by-image',
+      ).replace(queryParameters: {'user_id': userId, 'from_wardrobe': true}),
+    );
+    request.files.add(
+      await http.MultipartFile.fromPath('file', _selectedImage!.path),
+    );
+
+    final response = await request.send();
+    final responseData = await http.Response.fromStream(response);
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(responseData.body);
+      List<Map<String, dynamic>> recommendedList =
+          List<Map<String, dynamic>>.from(decoded['results']);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => WardrobeRecommendationPage(items: recommendedList),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Failed to fetch from wardrobe.")));
+    }
   }
 
+  void _findSimilarProducts() async {
+    if (_selectedImage == null) return;
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse(
+        'http://192.168.1.7:8000/search-by-image',
+      ).replace(queryParameters: {'user_id': userId, 'from_wardrobe': false}),
+    );
+    request.files.add(
+      await http.MultipartFile.fromPath('file', _selectedImage!.path),
+    );
+
+    final response = await request.send();
+    final responseData = await http.Response.fromStream(response);
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(responseData.body);
+      List<Map<String, dynamic>> myProductList =
+          List<Map<String, dynamic>>.from(decoded['results']);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProductRecommendationPage(products: myProductList),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to fetch similar products.")),
+      );
+    }
+  }
+
+  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.darkScaffoldColor,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            title: const Text('Style Assistant', style: TextStyle(color: Colors.white)),
-            floating: true,
-            backgroundColor: AppColors.darkScaffoldColor,
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                children: [
-                  _buildSearchBar(),
-                  const SizedBox(height: 24),
-                  _buildBodyTypeSection(),
-                  const SizedBox(height: 24),
+      body:
+          bodyType == null
+              ? const Center(child: CustomLoadingAnimation())
+              : CustomScrollView(
+                slivers: [
+                  SliverAppBar(
+                    title: const Text(
+                      'Style Assistant',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    floating: true,
+                    backgroundColor: AppColors.darkScaffoldColor,
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        children: [
+                          _buildSearchBar(),
+                          const SizedBox(height: 24),
+                          _buildBodyTypeSection(),
+                          const SizedBox(height: 24),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (_selectedImage != null) _buildImageAnalysisSection(),
+                  if (_showTextSearchOptions) _buildTextAnalysisSection(),
+                  if (_recommendedOutfits.isNotEmpty)
+                    _buildRecommendedOutfits(),
                 ],
               ),
-            ),
-          ),
-          if (_selectedImage != null) _buildImageAnalysisSection(),
-          if (_recommendedOutfits.isNotEmpty) _buildRecommendedOutfits(),
-          // _buildTrendingStylesSection(),
-        ],
-      ),
     );
   }
 
@@ -411,16 +438,23 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
                 hintText: 'Describe your outfit needs...',
                 hintStyle: TextStyle(color: Colors.white54),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
               ),
-              onSubmitted: (value) {
-                if (value.isNotEmpty) _searchByDescription(value);
-              },
             ),
           ),
           IconButton(
+            icon: const Icon(Icons.search, color: Colors.white70),
+            onPressed: () {
+              final text = _searchController.text.trim();
+              if (text.isNotEmpty) _searchByDescription(text);
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.camera_alt, color: Colors.white70),
-            onPressed: _pickAndAnalyzeImage,
+            onPressed: (_pickAndAnalyzeImage),
           ),
         ],
       ),
@@ -433,36 +467,62 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
       children: [
         Row(
           children: [
-            const Text('Body Type: ', style: TextStyle(color: Colors.white, fontSize: 16)),
-            Text(_bodyType, style: TextStyle(color: AppColors.primary, fontSize: 16, fontWeight: FontWeight.bold)),
-            const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.accessibility_new_rounded, color: Colors.white70),
-              onPressed: _showBodyTypeSelector,
+            const Text(
+              'Body Type: ',
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
+            Text(
+              bodyType ?? '',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Spacer(),
+            const SizedBox.shrink(),
           ],
         ),
         const SizedBox(height: 12),
         // ignore: deprecated_member_use
-        Text('Recommended for $_bodyType body type:', style: TextStyle(color: Colors.white.withOpacity(0.8))),
-        const SizedBox(height: 12),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: _bodyTypeOutfitSuggestions[_bodyType]!.map((outfit) {
-              return Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: Chip(
-                  label: Text(outfit, style: TextStyle(color: AppColors.cardBackgroundColor)),
-                  // ignore: deprecated_member_use
-                  backgroundColor: AppColors.primary.withOpacity(0.2),
-                  // ignore: deprecated_member_use
-                  side: BorderSide(color: AppColors.primary.withOpacity(0.5)),
-                ),
-              );
-            }).toList(),
-          ),
+        Text(
+          'Recommended for $bodyType body type:',
+          style: TextStyle(color: Colors.white.withOpacity(0.8)),
         ),
+        const SizedBox(height: 12),
+        if (bodyType != null &&
+            _bodyTypeOutfitSuggestions.containsKey(bodyType))
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children:
+                  _bodyTypeOutfitSuggestions[bodyType]!.map((outfit) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: GestureDetector(
+                        onTap: () => _searchByDescription(outfit),
+                        child: Chip(
+                          label: Text(
+                            outfit,
+                            style: TextStyle(
+                              color: AppColors.cardBackgroundColor,
+                            ),
+                          ),
+                          backgroundColor: AppColors.primary.withOpacity(0.2),
+                          side: BorderSide(
+                            color: AppColors.primary.withOpacity(0.5),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+            ),
+          )
+        else
+          const Text(
+            'Loading outfit suggestions...',
+            style: TextStyle(color: Colors.white70),
+          ),
       ],
     );
   }
@@ -499,7 +559,10 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
             ),
             const SizedBox(height: 16),
             if (_isAnalyzing)
-              const Text('Analyzing image...', style: TextStyle(color: Colors.white70)),
+              const Text(
+                'Analyzing image...',
+                style: TextStyle(color: Colors.white70),
+              ),
             if (!_isAnalyzing && _selectedImage != null)
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -522,6 +585,35 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
                   ),
                 ],
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  SliverToBoxAdapter _buildTextAnalysisSection() {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              onPressed: _searchTextWardrobe,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Find in Wardrobe'),
+            ),
+            ElevatedButton(
+              onPressed: _searchTextCatalog,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.samiDarkColor,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Shop Similar'),
+            ),
           ],
         ),
       ),
@@ -604,34 +696,6 @@ class _PersonalizedRecommendationPageState extends State<PersonalizedRecommendat
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTrendingStyleCard(String style) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: AppColors.samiDarkColor,
-              image: DecorationImage(
-                image: NetworkImage(_getOutfitImageUrl(style)),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          style,
-          // ignore: deprecated_member_use
-          style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
     );
   }
 

@@ -17,7 +17,6 @@ class WardrobePage extends StatefulWidget {
 }
 
 class _WardrobePageState extends State<WardrobePage> {
-  
   final ImagePicker _picker = ImagePicker();
   File? _selectedImage;
   bool _isUploading = false;
@@ -50,11 +49,10 @@ class _WardrobePageState extends State<WardrobePage> {
   ];
 
   @override
-void initState() {
-  super.initState();
-  _loadWardrobeItems();
-}
-
+  void initState() {
+    super.initState();
+    _loadWardrobeItems();
+  }
 
   String _titleCase(String txt) =>
       txt.split(' ').map((w) => w[0].toUpperCase() + w.substring(1)).join(' ');
@@ -63,29 +61,30 @@ void initState() {
   final List<Map<String, dynamic>> _wardrobeItems = [];
 
   void _loadWardrobeItems() async {
-  final user = FirebaseAuth.instance.currentUser;
-  if (user == null) return;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-  final docRef = FirebaseFirestore.instance.collection('users').doc(user.email);
-  final snapshot = await docRef.get();
+    final docRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.email);
+    final snapshot = await docRef.get();
 
-  if (snapshot.exists && snapshot.data() != null) {
-    final data = snapshot.data()!;
-    final List wardrobe = data['wardrobe'] ?? [];
+    if (snapshot.exists && snapshot.data() != null) {
+      final data = snapshot.data()!;
+      final List wardrobe = data['wardrobe'] ?? [];
 
-    setState(() {
-      _wardrobeItems.clear();
-      for (var item in wardrobe) {
-        _wardrobeItems.add({
-          'imageUrl': File(item['imageUrl']),
-          'category': item['category'],
-          'uploadDate': item['uploadDate'],
-        });
-      }
-    });
+      setState(() {
+        _wardrobeItems.clear();
+        for (var item in wardrobe) {
+          _wardrobeItems.add({
+            'imageUrl': (item['imageUrl']),
+            'category': item['category'],
+            'uploadDate': item['uploadDate'],
+          });
+        }
+      });
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -217,13 +216,13 @@ void initState() {
       onTap: () => _showItemDetails(item),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child:Image.network(
-        'http://192.168.1.6:8000${item['imageUrl']}',
-        width: double.infinity,
-        height: 200,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Icon(Icons.broken_image),
-      ),
+        child: Image.network(
+          'http://192.168.1.7:8000${item['imageUrl']}',
+          width: double.infinity,
+          height: 200,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Icon(Icons.broken_image),
+        ),
       ),
     );
   }
@@ -300,11 +299,11 @@ void initState() {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.network(
-  'http://192.168.1.6:8000${item['imageUrl']}',
-  fit: BoxFit.cover,
-),
+            'http://192.168.1.7:8000${item['imageUrl']}',
+            fit: BoxFit.cover,
+          ),
         ),
-      )
+      ),
     );
   }
 
@@ -335,10 +334,9 @@ void initState() {
       });
 
       // ---------- send to backend ----------
-      const apiUrl = 'http://192.168.1.6:8000/upload-wardrobe'; // your backend
+      const apiUrl = 'http://192.168.1.7:8000/upload-wardrobe'; // your backend
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('Not logged in');
-
 
       final request =
           http.MultipartRequest('POST', Uri.parse(apiUrl))
@@ -358,7 +356,7 @@ void initState() {
               : {};
 
       if (response.statusCode != 200) {
-    _showErrorDialog('Invalid image', resJson['reason'] ?? 'Unknown error');
+        _showErrorDialog('Invalid image', resJson['reason'] ?? 'Unknown error');
         return;
       }
 
@@ -368,12 +366,13 @@ void initState() {
       }
 
       // ---------- success ----------
-      final backendCategory = (resJson['category'] ?? 'shirt').toString().toLowerCase();
-      final savedImagePath = resJson['saved_image']; // e.g. assets/{user.uid}/item1.png
-await _showUploadConfirmation(backendCategory, savedImagePath);
-// e.g., assets/userid/file.png
- // e.g., assets/userid/file.png
-
+      final backendCategory =
+          (resJson['category'] ?? 'shirt').toString().toLowerCase();
+      final savedImagePath =
+          resJson['saved_image']; // e.g. assets/{user.uid}/item1.png
+      await _showUploadConfirmation(backendCategory, savedImagePath);
+      // e.g., assets/userid/file.png
+      // e.g., assets/userid/file.png
     } catch (e) {
       setState(() => _isUploading = false);
       _showErrorDialog('Error', 'Failed to process image: ${e.toString()}');
@@ -457,7 +456,10 @@ await _showUploadConfirmation(backendCategory, savedImagePath);
     return 'Other';
   }
 
-Future<void> _showUploadConfirmation(String detectedCategory, String savedImagePath) async {
+  Future<void> _showUploadConfirmation(
+    String detectedCategory,
+    String savedImagePath,
+  ) async {
     String? selectedCategory = detectedCategory;
 
     await showModalBottomSheet(
@@ -491,14 +493,13 @@ Future<void> _showUploadConfirmation(String detectedCategory, String savedImageP
                   const SizedBox(height: 16),
                   if (_selectedImage != null)
                     ClipRRect(
-  borderRadius: BorderRadius.circular(12),
-  child: Image.network(
-  'http://192.168.1.6:8000$savedImagePath',
-  height: 150,
-  fit: BoxFit.cover,
-),
-
-),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        'http://192.168.1.7:8000$savedImagePath',
+                        height: 150,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
 
                   const SizedBox(height: 24),
                   _buildCategoryDropdown(selectedCategory, (newValue) {
@@ -537,7 +538,10 @@ Future<void> _showUploadConfirmation(String detectedCategory, String savedImageP
                               return;
                             }
 
-                            await _uploadWardrobeItem(selectedCategory!, savedImagePath);
+                            await _uploadWardrobeItem(
+                              selectedCategory!,
+                              savedImagePath,
+                            );
 
                             // ignore: use_build_context_synchronously
                             Navigator.pop(context);
@@ -655,110 +659,110 @@ Future<void> _showUploadConfirmation(String detectedCategory, String savedImageP
   }
 
   Future<void> _uploadWardrobeItem(String category, String imagePath) async {
-  try {
-    final user = FirebaseAuth.instance.currentUser;
-if (user == null) return;
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
 
-final firestore = FirebaseFirestore.instance;
-final docRef = firestore.collection('users').doc(user.email);
+      final firestore = FirebaseFirestore.instance;
+      final docRef = firestore.collection('users').doc(user.email);
 
-await docRef.set({
-  'wardrobe': FieldValue.arrayUnion([
-    {
-      'imageUrl': imagePath,
-      'category': category,
-      'uploadDate': DateTime.now().toIso8601String(),
-    },
-  ]),
-}, SetOptions(merge: true));
+      await docRef.set({
+        'wardrobe': FieldValue.arrayUnion([
+          {
+            'imageUrl': imagePath,
+            'category': category,
+            'uploadDate': DateTime.now().toIso8601String(),
+          },
+        ]),
+      }, SetOptions(merge: true));
 
-setState(() {
-  _wardrobeItems.insert(0, {
-    'imageUrl': imagePath,
-    'category': category,
-    'uploadDate': DateTime.now().toString().split(' ')[0],
-  });
-  _isUploading = false;
-});
+      setState(() {
+        _wardrobeItems.insert(0, {
+          'imageUrl': imagePath,
+          'category': category,
+          'uploadDate': DateTime.now().toString().split(' ')[0],
+        });
+      });
 
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('✅ Item added to wardrobe!')),
-    );
-  } catch (e) {
-    setState(() => _isUploading = false);
-    _showErrorDialog('Upload Failed', e.toString());
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✅ Item added to wardrobe!')),
+      );
+    } catch (e) {
+      setState(() => _isUploading = false);
+      _showErrorDialog('Upload Failed', e.toString());
+    }
   }
-}
 
- void _showItemDetails(Map<String, dynamic> item) {
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: AppColors.samiDarkColor,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    builder: (context) => Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              'http://192.168.1.6:8000${item['imageUrl']}',
-              width: double.infinity,
-              height: 200,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            item['category'],
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            item['category'],
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
-              fontSize: 16,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Added on ${item['uploadDate']}',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.6),
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 32,
-                vertical: 12,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            child: const Text('Close'),
-          ),
-        ],
+  void _showItemDetails(Map<String, dynamic> item) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.samiDarkColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-    ),
-  );
-}
+      builder:
+          (context) => Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    'http://192.168.1.7:8000${item['imageUrl']}',
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.cover,
+                    errorBuilder:
+                        (_, __, ___) => const Icon(Icons.broken_image),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  item['category'],
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  item['category'],
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Added on ${item['uploadDate']}',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: const Text('Close'),
+                ),
+              ],
+            ),
+          ),
+    );
+  }
 
   void _showErrorDialog(String title, String message) {
     showDialog(
