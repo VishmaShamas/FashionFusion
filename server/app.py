@@ -108,8 +108,6 @@ async def upload_wardrobe(user_id: str = Form(...), image: UploadFile = File(...
         img = validate_image(img_bytes)
         category, conf, is_male, feature_tensor = classify_image(img)
 
-        if conf < SIM_THRESHOLD:
-            return {"valid": False, "reason": "Image unlikely to be clothing"}
         if not is_male:
             return {"valid": False, "reason": "Detected as non-male clothing"}
 
@@ -188,7 +186,7 @@ def search_by_text(query: str = Query(..., min_length=2), user_id: str = Query(N
                 "title": product.get("title", "Unknown") if product else "N/A",
                 "brand": product.get("brand", "N/A") if product else "N/A",
                 "price": product.get("price", "N/A") if product else "N/A",
-                "shop_link": product.get("url", "N/A") if product else "N/A",
+                "url": product.get("url", "N/A") if product else "N/A",
                 "image_url": product.get("image", path) if product else path,
                 "score": round(score, 4)
             })

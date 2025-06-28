@@ -94,6 +94,7 @@ flutter:
     - assets/data/data.json
     - assets/data/data2.json
     - assets/trend/
+    - assets/avatar/avatar.jpeg
   #   - images/a_dot_ham.jpeg
 
   # fonts:

@@ -31,7 +31,6 @@ class _PersonalizedRecommendationPageState
   List<String> _recommendedOutfits = [];
   String _lastQuery = '';
   bool _showTextSearchOptions = false;
-  String? _selectedOutfit;
 
   final List<String> validBodyTypes = [
     'Straight Frame',
@@ -242,13 +241,14 @@ class _PersonalizedRecommendationPageState
 
       setState(() {
         _selectedImage = File(pickedFile.path);
-        _lastQuery = "";
-        _showTextSearchOptions = false;
         _isAnalyzing = true;
+        _lastQuery = '';
+        _showTextSearchOptions=false;
         _recommendedOutfits.clear();
-
-        _selectedOutfit = null;
       });
+
+      print("📸 Selected Image: ${_selectedImage!.path}");
+      print("📸 File exists? ${_selectedImage!.existsSync()}");
 
       for (int i = 0; i < 5; i++) {
         setState(() => _scanPosition = (i % 2 == 0) ? 1.0 : 0.0);
@@ -259,24 +259,27 @@ class _PersonalizedRecommendationPageState
         _isAnalyzing = false;
       });
     } catch (e) {
+      print("❌ Error during image pick/analyze: $e");
       setState(() => _isAnalyzing = false);
-    }
+      }
   }
 
+
   void _searchByDescription(String query) {
-    setState(() {
-      _lastQuery = query;
-      _selectedImage = null;
-      _showTextSearchOptions = true;
-      _selectedOutfit = null;
-      _recommendedOutfits.clear(); // Hide random static suggestions
-    });
-  }
+  setState(() {
+    _selectedImage = null;
+    _lastQuery = query;
+    _searchController.text = query; // 🔁 Fill the search bar
+    _showTextSearchOptions = true;
+    _recommendedOutfits.clear();
+  });
+}
+
 
   void _searchTextWardrobe() async {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? "unknown";
     final url = Uri.parse(
-      'http://192.168.1.12:8000/search?query=${Uri.encodeComponent(_lastQuery)}&user_id=$userId&from_wardrobe=true',
+      'http://172.20.10.12:8000/search?query=${Uri.encodeComponent(_lastQuery)}&user_id=$userId&from_wardrobe=true',
     );
 
     final response = await http.get(url);
@@ -284,6 +287,10 @@ class _PersonalizedRecommendationPageState
       final decoded = jsonDecode(response.body);
       List<Map<String, dynamic>> recommendedList =
           List<Map<String, dynamic>>.from(decoded['results']);
+      recommendedList = recommendedList.map((item) {
+        item['imageUrl'] = 'http://172.20.10.12:8000/' + item['image_url'].toString().replaceAll("\\", "/");
+        return item;
+      }).toList();
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -298,16 +305,25 @@ class _PersonalizedRecommendationPageState
   }
 
   void _searchTextCatalog() async {
-    final url = Uri.parse(
-      'http://192.168.1.12:8000/search?query=${Uri.encodeComponent(_lastQuery)}&from_wardrobe=false',
-    );
-
-    final response = await http.get(url);
-    if (response.statusCode == 200) {
-      final decoded = jsonDecode(response.body);
-      List<Map<String, dynamic>> productList = List<Map<String, dynamic>>.from(
-        decoded['results'],
+     print("🧪 Shop Similar button clicked");
+      final url = Uri.parse(
+        'http://172.20.10.12:8000/search?query=${Uri.encodeComponent(_lastQuery)}&from_wardrobe=false',
       );
+
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        List<Map<String, dynamic>> productList = List<Map<String, dynamic>>.from(decoded['results']);
+        productList = productList.map((item) {
+  // Only modify URL if it's a local wardrobe image path
+          if (!item['image_url'].toString().startsWith('http')) {
+              item['imageUrl'] =
+              'http://172.20.10.12:8000/' + item['image_url'].toString().replaceAll("\\", "/");
+          }else {
+              item['imageUrl'] = item['image_url'];
+            }
+    return item;
+  }).toList(); 
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -322,25 +338,44 @@ class _PersonalizedRecommendationPageState
   }
 
   void _findSimilarInWardrobe() async {
-    if (_selectedImage == null) return;
+    if (_selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select an image first.")),
+      );
+      return;
+    }
 
     final userId = FirebaseAuth.instance.currentUser?.uid ?? "unknown";
-    final uri = Uri.parse(
-      'http://192.168.1.12:8000/search-by-image',
-    ).replace(queryParameters: {'user_id': userId, 'from_wardrobe': true});
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('http://172.20.10.12:8000/search-by-image')
+          .replace(queryParameters: {'user_id': userId, 'from_wardrobe': 'true'}),
+    );
 
-    final request = http.MultipartRequest('POST', uri)
-      ..files.add(
-        await http.MultipartFile.fromPath('file', _selectedImage!.path),
-      );
+    print("📡 Wardrobe API Triggered");
+    print("📷 Selected Image: ${_selectedImage!.path}");
+    print("🧾 File exists? ${_selectedImage!.existsSync()}");
 
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
+    request.files.add(
+      await http.MultipartFile.fromPath('file', _selectedImage!.path),
+    );
+
+    final response = await request.send();
+    final responseData = await http.Response.fromStream(response);
+
+    print("✅ Wardrobe API Status Code: ${response.statusCode}");
+    print("📦 Response Body: ${responseData.body}");
 
     if (response.statusCode == 200) {
-      final decoded = jsonDecode(response.body);
+      final decoded = jsonDecode(responseData.body);
       List<Map<String, dynamic>> recommendedList =
           List<Map<String, dynamic>>.from(decoded['results']);
+
+      recommendedList = recommendedList.map((item) {
+        item['imageUrl'] = 'http://172.20.10.12:8000/' + item['image_url'].toString().replaceAll("\\", "/");
+        return item;
+      }).toList();
+
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -348,44 +383,85 @@ class _PersonalizedRecommendationPageState
         ),
       );
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Failed to fetch from wardrobe.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to fetch from wardrobe.")),
+      );
     }
   }
 
-  void _findSimilarProducts() async {
-    if (_selectedImage == null) return;
 
+void _findSimilarProducts() async {
+  print("🧪 Shop Similar button clicked");
+
+  if (_selectedImage == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Please select an image first.")),
+    );
+    return;
+  }
+
+  try {
+    print("🟡 Step 1: Preparing request");
     final uri = Uri.parse(
-      'http://192.168.1.12:8000/search-by-image',
-    ).replace(queryParameters: {'user_id': userId, 'from_wardrobe': false});
+      'http://172.20.10.12:8000/search-by-image',
+    ).replace(queryParameters: {
+      'user_id': userId,
+      'from_wardrobe': 'false',
+    });
 
+    print("🟢 Step 2: Creating multipart request");
     final request = http.MultipartRequest('POST', uri)
-      ..files.add(
-        await http.MultipartFile.fromPath('file', _selectedImage!.path),
-      );
+      ..files.add(await http.MultipartFile.fromPath('file', _selectedImage!.path));
 
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
+    print("📡 Sending request to FastAPI...");
+    final response = await request.send();
+    final responseData = await http.Response.fromStream(response);
+
+    print("✅ Status Code: ${response.statusCode}");
+    print("✅ Response Body: ${responseData.body}");
 
     if (response.statusCode == 200) {
-      final decoded = jsonDecode(response.body);
-      List<Map<String, dynamic>> myProductList =
+      final decoded = jsonDecode(responseData.body);
+
+      List<Map<String, dynamic>> productList =
           List<Map<String, dynamic>>.from(decoded['results']);
+
+      productList = productList.map((item) {
+        // Fix only if the image_url is local
+        if (!item['image_url'].toString().startsWith('http')) {
+          item['imageUrl'] =
+              'http://172.20.10.12:8000/' + item['image_url'].toString().replaceAll("\\", "/");
+        } else {
+          item['imageUrl'] = item['image_url'];
+        }
+        return item;
+      }).toList();
+
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => ProductRecommendationPage(products: myProductList),
+          builder: (_) => ProductRecommendationPage(products: productList),
         ),
       );
     } else {
+      print("❌ API returned error status.");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to fetch similar products.")),
+        const SnackBar(content: Text("Failed to fetch similar products.")),
       );
     }
+  } catch (e, stacktrace) {
+    print("🚨 Exception occurred: $e");
+    print("📚 Stacktrace: $stacktrace");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Something went wrong: $e")),
+    );
   }
+}
 
+
+
+
+  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -451,14 +527,8 @@ class _PersonalizedRecommendationPageState
           IconButton(
             icon: const Icon(Icons.search, color: Colors.white70),
             onPressed: () {
-              if (_selectedImage == null &&
-                  _searchController.text.trim().isEmpty)
-                return;
-              if (_selectedImage != null) {
-                // You may directly call _findSimilarProducts or show relevant UI
-              } else if (_searchController.text.trim().isNotEmpty) {
-                _searchByDescription(_searchController.text.trim());
-              }
+              final text = _searchController.text.trim();
+              if (text.isNotEmpty) _searchByDescription(text);
             },
           ),
           IconButton(
@@ -506,44 +576,28 @@ class _PersonalizedRecommendationPageState
             child: Row(
               children:
                   _bodyTypeOutfitSuggestions[bodyType]!.map((outfit) {
-                    final isSelected = _selectedOutfit == outfit;
                     return Padding(
                       padding: const EdgeInsets.only(right: 12),
                       child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedOutfit = outfit;
-                          });
-                          _searchByDescription(outfit);
-                        },
+                        onTap: () => _searchByDescription(outfit),
                         child: Chip(
-                          label: Text(
-                            outfit,
-                            style: TextStyle(
-                              color:
-                                  isSelected
-                                      ? Colors.white
-                                      : AppColors.cardBackgroundColor,
-                              fontWeight:
-                                  isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                            ),
-                          ),
-                          backgroundColor:
-                              isSelected
-                                  ? AppColors.primary
-                                  : AppColors.primary.withOpacity(0.2),
-                          side: BorderSide(
-                            color:
-                                isSelected
-                                    ? AppColors.primary
-                                    : AppColors.primary.withOpacity(0.5),
-                            width: isSelected ? 2 : 1,
-                          ),
-                          elevation: isSelected ? 4 : 0,
-                          shadowColor: isSelected ? AppColors.primary : null,
-                        ),
+  label: Text(
+    outfit,
+    style: TextStyle(
+      color: _lastQuery == outfit
+          ? Colors.white
+          : AppColors.cardBackgroundColor,
+    ),
+  ),
+  backgroundColor: _lastQuery == outfit
+      ? AppColors.primary
+      : AppColors.primary.withOpacity(0.2),
+  side: BorderSide(
+    color: _lastQuery == outfit
+        ? Colors.transparent
+        : AppColors.primary.withOpacity(0.5),
+  ),
+),
                       ),
                     );
                   }).toList(),
@@ -607,7 +661,10 @@ class _PersonalizedRecommendationPageState
                     child: const Text('Find in Wardrobe'),
                   ),
                   ElevatedButton(
-                    onPressed: _findSimilarProducts,
+                    onPressed: (){
+                      print("🧪 Shop Similar button TAPPED");
+                      _findSimilarProducts();
+                    }, 
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.samiDarkColor,
                       foregroundColor: Colors.white,
@@ -638,11 +695,19 @@ class _PersonalizedRecommendationPageState
               child: const Text('Find in Wardrobe'),
             ),
             ElevatedButton(
-              onPressed: _searchTextCatalog,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.samiDarkColor,
-                foregroundColor: Colors.white,
-              ),
+              onPressed: () {
+                final query = _searchController.text.trim();
+                if (query.isNotEmpty) {
+                  setState(() {
+                    _lastQuery = query;
+                  });
+                _searchTextCatalog();
+              } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Please enter a description first.")),
+                );
+              }
+            },
               child: const Text('Shop Similar'),
             ),
           ],

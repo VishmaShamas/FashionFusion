@@ -25,7 +25,6 @@ class _ProfilePageState extends State<ProfilePage> {
   Map<String, dynamic>? userData;
   List<dynamic> wardrobe = [];
   List<dynamic> likedProducts = [];
-  List<dynamic> preferences = [];
   bool _isLoading = true;
   bool _isSaving = false;
   bool _hasChanges = false;
@@ -63,14 +62,7 @@ class _ProfilePageState extends State<ProfilePage> {
         await userDoc.collection('likedProducts').limit(10).get();
     likedProducts = likedSnapshot.docs.map((doc) => doc.data()).toList();
 
-    // Fetch preferences
-    final prefSnapshot =
-        await userDoc.collection('preferences').limit(10).get();
-    preferences =
-        prefSnapshot.docs
-            .map((doc) => doc.data())
-            .toList(); // Assuming doc ID is preference name
-
+    
     setState(() {
       _isLoading = false;
     });
@@ -275,7 +267,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         child: CircleAvatar(
                           radius: 50,
                           backgroundImage: AssetImage(
-                            'assets/avatar/avatar.png',
+                            'assets/avatar/avatar.jpeg',
                           ),
                           backgroundColor: Colors.transparent,
                         ),
@@ -315,10 +307,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 const SizedBox(height: 40),
                 // _buildTrendingStyles(),
                 // const SizedBox(height: 32),
-                _buildSectionTitle("Your Style Preferences", () {}),
-                const SizedBox(height: 16),
-                _buildStylePreferences(),
-                const SizedBox(height: 32),
                 _buildSectionTitle("Your Wardrobe", () {
                   Navigator.push(
                     context,
@@ -376,30 +364,6 @@ class _ProfilePageState extends State<ProfilePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Preferences',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              TextButton(
-                onPressed: () {},
-                child: Text(
-                  'See All',
-                  style: TextStyle(color: AppColors.primary),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
         SizedBox(
           height: 220,
           child: ListView.builder(
@@ -504,7 +468,6 @@ class _ProfilePageState extends State<ProfilePage> {
       children: [
         _buildStatItem("${likedProducts.length}", "Liked Items"),
         _buildStatItem("${wardrobe.length}", "Wardrobe"),
-        _buildStatItem("${preferences.length}", "Preferences"),
       ],
     ).animate().fadeIn().slideY(begin: 0.2, end: 0);
   }
@@ -594,28 +557,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildStylePreferences() {
-    if (preferences.isEmpty) {
-      return _buildEmptyMessage("No preferences added yet.");
-    }
-
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children:
-          preferences.map((pref) {
-            return Chip(
-              avatar: Icon(Icons.style, size: 18, color: Colors.white),
-              label: Text(pref, style: const TextStyle(color: Colors.white)),
-              backgroundColor: AppColors.primary.withOpacity(0.2),
-              side: BorderSide(color: AppColors.primary.withOpacity(0.5)),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            );
-          }).toList(),
-    );
-  }
+  
 
   Widget _buildStyleChip(String label, IconData icon) {
     return Chip(
@@ -677,7 +619,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final nameController = TextEditingController(text: user?.displayName ?? '');
     nameController.addListener(() {
       final changedName =
-          nameController.text.trim() != (user?.displayName ?? '');
+          nameController.text.trim() != (user?.displayName ?? '');  
       setState(() {
         _hasChanges = changedName || _selectedImage != null;
       });
@@ -710,15 +652,15 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                GestureDetector(
-                  onTap: _pickImage,
-                  child: CircleAvatar(
-                    radius: 40,
-                    backgroundColor: AppColors.samiDarkColor,
-                    child: const Icon(Icons.camera_alt, color: Colors.white70),
-                  ),
-                ),
-                const SizedBox(height: 16),
+                // GestureDetector(
+                //   onTap: _pickImage,
+                //   child: CircleAvatar(
+                //     radius: 40,
+                //     backgroundColor: AppColors.samiDarkColor,
+                //     child: const Icon(Icons.camera_alt, color: Colors.white70),
+                //   ),
+                // ),
+                // const SizedBox(height: 16),
                 TextField(
                   controller: nameController,
                   style: const TextStyle(color: Colors.white),

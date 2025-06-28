@@ -212,20 +212,34 @@ class _WardrobePageState extends State<WardrobePage> {
   }
 
   Widget _buildWardrobeGridItem(Map<String, dynamic> item) {
-    return GestureDetector(
-      onTap: () => _showItemDetails(item),
+  return GestureDetector(
+    onTap: () => _showItemDetails(item),
+    child: Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.white.withOpacity(1), // Light purple
+            blurRadius: 10,
+            spreadRadius: 2,
+            offset: Offset(0, 4),
+          ),
+        ],
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Image.network(
-          'http://192.168.18.73:8000${item['imageUrl']}',
+          'http://172.20.10.12:8000${item['imageUrl']}',
           width: double.infinity,
           height: 200,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Icon(Icons.broken_image),
+          fit: BoxFit.scaleDown,
+          errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildWardrobeList() {
     final filteredItems =
@@ -272,25 +286,29 @@ class _WardrobePageState extends State<WardrobePage> {
     }
 
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      sliver: SliverGrid(
-        delegate: SliverChildBuilderDelegate((context, index) {
-          final item = filteredItems[index];
-          return _buildWardrobeGridItem(item);
-        }, childCount: filteredItems.length),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 0.8,
-        ),
-      ),
-    );
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    sliver: SliverGrid(
+    delegate: SliverChildBuilderDelegate(
+      (context, index) {
+        final item = filteredItems[index];
+        return _buildWardrobeGridItem(item); // ✅ Updated version with shadow
+      },
+      childCount: filteredItems.length,
+    ),
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 0.8,
+    ),
+  ),
+);
+
   }
 
   Widget _buildWardrobeItem(Map<String, dynamic> item) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.samiDarkColor,
@@ -299,8 +317,8 @@ class _WardrobePageState extends State<WardrobePage> {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Image.network(
-            'http://192.168.18.73:8000${item['imageUrl']}',
-            fit: BoxFit.cover,
+            'http://172.20.10.12:8000${item['imageUrl']}',
+            fit: BoxFit.scaleDown,
           ),
         ),
       ),
@@ -335,7 +353,7 @@ class _WardrobePageState extends State<WardrobePage> {
 
       // ---------- send to backend ----------
       const apiUrl =
-          'http://192.168.18.73:8000/upload-wardrobe'; // your backend
+          'http://172.20.10.12:8000/upload-wardrobe'; // your backend
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('Not logged in');
 
@@ -710,7 +728,7 @@ class _WardrobePageState extends State<WardrobePage> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(
-                    'http://192.168.18.73:8000${item['imageUrl']}',
+                    'http://172.20.10.12:8000${item['imageUrl']}',
                     width: double.infinity,
                     height: 200,
                     fit: BoxFit.cover,
